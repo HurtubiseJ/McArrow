@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "FrontendRN",
-    "slug": "FrontendRN",
+    "slug": "mcarrow",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -36,6 +36,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "e5174ab8-c586-4329-bad0-99f90b65a230"
+      }
+    },
+    "owner": "adv-software-design"
   }
 }
