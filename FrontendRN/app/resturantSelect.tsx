@@ -1,10 +1,24 @@
 import { View, Text, StyleSheet } from 'react-native';
+import { useRouter } from "expo-router";
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 
-export default function ScreenTwo() {
+export default function ResturantSelectScreen() {
+  const router = useRouter();
+
+  const swipeRight = Gesture.Pan()
+    .onEnd((event) => {
+      if (event.translationX > -50) {
+        router.push('/');
+      }
+    });
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Screen Two</Text>
-    </View>
+    <GestureDetector gesture={swipeRight}>
+      <View style={styles.container}>
+        <Text style={styles.text}>Resturant Select</Text>
+        <Text style={styles.text}>Swipe right to go back</Text>
+      </View>
+    </GestureDetector>
   );
 }
 
