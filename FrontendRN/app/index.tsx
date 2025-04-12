@@ -1,21 +1,37 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useRouter } from 'expo-router';
+import { runOnJS } from 'react-native-reanimated';
 
 export default function HomeScreen() {
   const router = useRouter();
 
-  const swipeLeft = Gesture.Pan()
+  const handleLeftSwipe = () => {
+    console.log('Navigating to /resturantSelect');
+    router.push('/resturantSelect');
+  };
+
+  const handleRightSwipe = () => {
+    console.log('Navigating to /testGyro');
+    router.push('/testGyro');
+  };
+
+  const panGesture = Gesture.Pan()
     .onEnd((event) => {
+      if (Math.abs(event.translationX) < 50) return;
+
       if (event.translationX < -50) {
-        router.push('/resturantSelect');
+        runOnJS(handleLeftSwipe)(); 
+      } else if (event.translationX > 50) {
+        runOnJS(handleRightSwipe)();
       }
     });
+  
 
   return (
-    <GestureDetector gesture={swipeLeft}>
+    <GestureDetector gesture={panGesture}>
       <View style={styles.container}>
-        <Text style={styles.text}>Swipe left to go to Screen Two →</Text>
+        <Text style={styles.text}>Swipe left to go to Screen Two</Text>
       </View>
     </GestureDetector>
   );

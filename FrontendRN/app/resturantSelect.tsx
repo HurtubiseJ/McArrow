@@ -1,19 +1,27 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { useRouter } from "expo-router";
-import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { runOnJS } from 'react-native-reanimated';
 
 export default function ResturantSelectScreen() {
   const router = useRouter();
 
-  const swipeRight = Gesture.Pan()
+  const handleRightSwipe = () => {
+    console.log('Navigating to /index');
+    router.push('/');
+  };
+
+  const panGesture = Gesture.Pan()
     .onEnd((event) => {
-      if (event.translationX > -50) {
-        router.push('/');
+      if (Math.abs(event.translationX) < 50) return;
+
+      if (event.translationX > 50) {
+        runOnJS(handleRightSwipe)();
       }
     });
 
   return (
-    <GestureDetector gesture={swipeRight}>
+    <GestureDetector gesture={panGesture}>
       <View style={styles.container}>
         <Text style={styles.text}>Resturant Select</Text>
         <Text style={styles.text}>Swipe right to go back</Text>
