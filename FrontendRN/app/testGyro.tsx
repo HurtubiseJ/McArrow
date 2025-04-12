@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Gyroscope } from 'expo-sensors';
+import { Gyroscope, Magnetometer } from 'expo-sensors';
 import { useRouter } from 'expo-router';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Platform } from 'react-native';
@@ -28,6 +28,8 @@ export default function GyroScreen() {
     y: 0,
     z: 0,
   });
+
+  // Calc rotation data
   const [subscription, setSubscription] = useState(null);
 
   const _slow = () => Gyroscope.setUpdateInterval(1000);
@@ -47,6 +49,32 @@ export default function GyroScreen() {
     }
   };
 
+  // North pointing header calculations
+  const [heading, setHeading] = useState(0);
+  useEffect(() => {
+    const magSubscription = Magnetometer.addListener((data) => {
+        let angle = calcAngle(data);
+        setHeading(angle);
+    });
+    
+    Magnetometer.setUpdateInterval(100);
+
+    return () => magSubscription.remove();
+  }, []);
+
+  const calcAngle = (magnetometer) => {
+    let {x, y} = magnetometer; 
+
+    // Swiped from stack overflow
+    let angle = Math.atan2(y, x);
+    angle = angle * (180 / Math.PI); 
+    angle = angle + 90;
+    if (angle < 0) {
+      angle = 360 + angle;
+    }
+    return Math.round(angle);
+  }
+
   useEffect(() => {
     if (Platform.OS !== 'web') {
       _subscribe();
@@ -61,6 +89,7 @@ export default function GyroScreen() {
       <Text style={styles.text}>x: {x}</Text>
       <Text style={styles.text}>y: {y}</Text>
       <Text style={styles.text}>z: {z}</Text>
+      <Text style={styles.text}>Angle: {heading}</Text>
       <View style={styles.buttonContainer}>
         <TouchableOpacity onPress={subscription ? _unsubscribe : _subscribe} style={styles.button}>
           <Text>{subscription ? 'On' : 'Off'}</Text>
