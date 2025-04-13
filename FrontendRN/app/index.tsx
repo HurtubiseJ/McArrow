@@ -31,7 +31,7 @@ export default function HomeScreen() {
   return (
     <GestureDetector gesture={panGesture}>
       <View style={styles.container}>
-        <Text style={styles.text}>Swipe left to go to Screen Two</Text>
+        <Text style={styles.text}>Swipe left or right</Text>
       </View>
     </GestureDetector>
   );

@@ -16,6 +16,8 @@ export default function ResturantSelectScreen() {
       if (Math.abs(event.translationX) < 50) return;
 
       if (event.translationX > 50) {
+        // Must call navigation on seperate thread (like so) 
+        // or else app go boom on iOS
         runOnJS(handleRightSwipe)();
       }
     });
