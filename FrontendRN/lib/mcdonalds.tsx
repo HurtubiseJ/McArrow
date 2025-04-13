@@ -1,4 +1,4 @@
-// USED https://github.com/0neDrop/mcdonalds-api/tree/master/src
+// USED https://github.com/0neDrop/mcdonalds-api/tree/master/src converted to tsx. 
 // Have not tested!!!
 
 const API_URL = 'https://www.mcdonalds.com/googleappsv2/geolocation';
