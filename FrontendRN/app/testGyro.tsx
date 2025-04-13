@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Gyroscope, Magnetometer } from 'expo-sensors';
+import { Gyroscope, Magnetometer, MagnetometerMeasurement } from 'expo-sensors';
 import { useRouter } from 'expo-router';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Platform } from 'react-native';
@@ -62,7 +62,7 @@ export default function GyroScreen() {
     return () => magSubscription.remove();
   }, []);
 
-  const calcAngle = (magnetometer) => {
+  const calcAngle = (magnetometer: MagnetometerMeasurement) => {
     let {x, y} = magnetometer; 
 
     // Swiped from stack overflow

@@ -7,6 +7,13 @@ restaurant. After completing this goal, we will have the foundation of the front
 
 We want to keep the app GUI as simple as possible just focusing on the arrow component. The goal is for the user to open the app and the arrow to start pointing in the correct direction. We don't want the user to use this as a navigation app, more as a "look at this cool app I downloaded that points to the nearest X".  The app should load quickly so the user can pull it out, show someone and then put it away as they please. There will be no menu option and switching to other pages will be done through swiping or shaking the device. This will allow for a concise user experience focused on following the arrow! Other features will appear as add-ons to the application.
 
+### Learning Goals
+- Become more confortable with front end styling in React Native.
+- Develope familiarity with using Expo with React Native to impliment, test, and release across different platforms.
+- Begin learning Rust and specifically using Axum/Tokio as a backend framework.
+- Learn more about networking concepts through Rust backend.
+- Further skills in creating user centered applications. 
+
 ### Goals
 
 - Create a MVP application quickly which will have core features implemented. (Gyroscopic arrow, clean UI)
