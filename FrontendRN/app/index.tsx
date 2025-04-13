@@ -7,7 +7,7 @@ export default function HomeScreen() {
   const router = useRouter();
 
   const handleLeftSwipe = () => {
-    console.log('Navigating to /resturantSelect');
+    console.log('Navigating to /testLocation');
     router.push('/resturantSelect');
   };
 
