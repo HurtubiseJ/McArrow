@@ -29,6 +29,7 @@ export async function getNearestMDLocation(longitude: number, laditude: number) 
                 console.log("No results");
                 return 
             }
+            console.log(data.features);
             return data.features[0];
           };
           
