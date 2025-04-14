@@ -31,8 +31,8 @@ export default function TestLocationScreen() {
           const fetchData = async () => {
             try {
               const result = await getNearestMDLocation(lat, long);
-              setTest(result);
               console.log(result);
+              setTest(result);
             } catch (err) {
               console.error('Failed to fetch nearest location:', err);
             }
