@@ -10,8 +10,13 @@ export default function GyroScreen() {
     const router = useRouter();
 
     const handleLeftSwipe = () =>    {
-        console.log('Navigating to /index');
+        console.log('Navigating to /home');
         router.push('/');
+    };
+
+    const handleRightSwipe = () =>    {
+        console.log('Navigating to /userLocation');
+        router.push('/userLocation');
     };
 
     const panGesture = Gesture.Pan()
@@ -20,7 +25,9 @@ export default function GyroScreen() {
 
             if (event.translationX < -50) {
                 runOnJS(handleLeftSwipe)(); 
-            }
+              } else if (event.translationX > 50) {
+                runOnJS(handleRightSwipe)();
+              }
         });
 
     const [{ x, y, z }, setData] = useState({
