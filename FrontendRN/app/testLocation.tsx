@@ -1,4 +1,4 @@
-import { getNearestLocation } from "../lib/mcdonalds";
+import calcBearing, { getNearestLocation } from "../lib/locationUtil";
 import { useRouter } from "expo-router";
 import { runOnJS } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -25,14 +25,16 @@ export default function TestLocationScreen() {
             }
         });
     
-    const [lat, setLat] = useState<number | null>(null);
+    const [lat, setLat] = useState<number | null>(null); // store location
     const [long, setLong] = useState<number | null>(null); 
-    const [locationLat, setLocationLat] = useState<number | null>(null);
+    const [locationLat, setLocationLat] = useState<number | null>(null); //user location
     const [locationLong, setLocationLong] = useState<number | null>(null);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
+    const [bearing, setBearing] = useState<number | null>(null);
 
     useEffect(() => {
         async function getCurrentLocation() {
+            console.log("In Get location");
           if (Platform.OS === 'android' && !Device.isDevice) {
             setErrorMsg(
               'Oops, this will not work on Snack in an Android Emulator. Try it on your device!'
@@ -44,11 +46,15 @@ export default function TestLocationScreen() {
             setErrorMsg('Permission to access location was denied');
             return;
           }
+          console.log("Got status");
     
           let location = await Location.getCurrentPositionAsync({});
+          console.log("Got location");
+          console.log(location);
           if (location){
             setLocationLat(location.coords.latitude);
             setLocationLong(location.coords.longitude);
+            console.log(locationLat, locationLong);
           } else {
             console.log("No Location data");
           }
@@ -61,35 +67,37 @@ export default function TestLocationScreen() {
       useEffect(() => {
         let isMounted = true;
     
-        const fetchUntilSuccess = async () => {
-            while (isMounted) {
+        const fetchNearest = async () => {
+            if (locationLat !== null && locationLong !== null) {
                 try {
-                    console.log("Trying fetch with:", lat, long);
-                    const result = await getNearestLocation(lat, long, "McDonalds");
-    
+                    const result = await getNearestLocation(locationLat, locationLong, "McDonalds");
                     if (result) {
-                        console.log("Found:", result);
                         setLat(result.lat);
                         setLong(result.lng);
-                        break;
                     } else {
-                        console.log("No location found, retrying...");
+                        console.log("Failed to find nearest location");
                     }
-                } catch (err) {
-                    console.error("Fetch failed, retrying...", err);
+                } catch {
+                    console.log("API fetch failed");
                 }
-    
-                await new Promise((resolve) => setTimeout(resolve, 1000));
+            } else {
+                console.log("Null values");
             }
         };
     
-        fetchUntilSuccess();
+        fetchNearest();
+    }, [locationLat, locationLong]);
     
-        return () => {
-            isMounted = false; 
-        };
-    }, []);
-    
+    //Calculate bearing
+    useEffect(() => {
+        const getBearing = () => {
+            const bearing = calcBearing(locationLat, locationLong, lat, long);
+            console.log("Bearing:");
+            console.log(bearing);
+            setBearing(bearing);
+        }
+        getBearing();
+    }, [lat, long]);
 
     if (lat === null || long === null) {
         return (
@@ -108,6 +116,7 @@ export default function TestLocationScreen() {
                 <Text>LOCATION</Text>
                 <Text>Latitude:  {locationLat}</Text>
                 <Text>Longitude: {locationLong}</Text>
+                <Text>Bearing: {bearing}</Text>
 
             </View>
         </GestureDetector>

@@ -1,6 +1,6 @@
 // USED https://github.com/0neDrop/mcdonalds-api/tree/master/src converted to tsx. 
 // Have not tested!!!
-export async function getNearestLocation(longitude: number, latitude: number, keyWord: string) {
+export async function getNearestLocation(latitude: number, longitude: number, keyWord: string) {
     try{
         const fetchNearestLocation = async (
             lat: number,
@@ -11,6 +11,8 @@ export async function getNearestLocation(longitude: number, latitude: number, ke
             const type = "restaurant";
             const key = "AIzaSyDZN49QqnniwdsEjKnqu4EntPC7SpVr4cM";
             const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=${keyWord}&location=${location}&radius=${radius}&type=${type}&key=${key}`;
+
+            console.log(url);
 
             const response = await fetch(url);
 
@@ -33,4 +35,22 @@ export async function getNearestLocation(longitude: number, latitude: number, ke
         console.log("Error fetching McDonalds location");
         return
     }
+}
+
+export default function calcBearing(lat: number, lng: number, latLocation: number, lngLocation: number) {
+    // Calculates heading from use location (lat, lng) to store (latLocation, lngLocation)
+    const toRad = (deg: number) => deg * (Math.PI / 180);
+
+    const lat1 = toRad(lat);
+    const lng1 = toRad(lng);
+    const lat2 = toRad(latLocation);
+    const lng2 = toRad(lngLocation);
+
+    const x = Math.cos(lat2) * Math.sin(lng2 - lng1);
+    const y = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lng2 - lng1);
+
+    const b = Math.atan2(x, y) * (180 / Math.PI); // Bearing in degrees
+
+    const bearing = (b + 360) % 360; // Normalize to 0–360°
+    return bearing;
 }
