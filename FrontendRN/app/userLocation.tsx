@@ -64,9 +64,9 @@ export default function UserLocationScreen() {
 
   return (
     <GestureDetector gesture={panGesture}>
-    <View style={styles.container}>
-      <Text style={styles.paragraph}>{text}</Text>
-    </View>
+        <View style={styles.container}>
+            <Text style={styles.paragraph}>{text}</Text>
+        </View>
     </GestureDetector>
   );
 }
