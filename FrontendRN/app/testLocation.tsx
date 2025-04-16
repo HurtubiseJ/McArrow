@@ -6,7 +6,7 @@ import { View, Text, StyleSheet, Platform } from 'react-native';
 import { useEffect, useState } from "react";
 import * as Location from 'expo-location';
 import * as Device from 'expo-device';
-import Arrow3D from '../components/arrow';
+// import Arrow3D from '../components/arrow';
 
 
 
@@ -119,9 +119,9 @@ export default function TestLocationScreen() {
                 <Text>Latitude:  {locationLat}</Text>
                 <Text>Longitude: {locationLong}</Text>
                 <Text>Bearing: {bearing}</Text>
-                <View style={{ flex: 1 }}>
+                {/* <View style={{ flex: 1 }}>
                     <Arrow3D bearing={128} color="#ff4500" />
-                </View>
+                </View> */}
             </View>
         </GestureDetector>
     );
