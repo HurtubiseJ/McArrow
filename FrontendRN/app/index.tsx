@@ -3,6 +3,8 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useRouter } from 'expo-router';
 import { runOnJS } from 'react-native-reanimated';
 
+// Comment git test
+
 export default function HomeScreen() {
   const router = useRouter();
 
