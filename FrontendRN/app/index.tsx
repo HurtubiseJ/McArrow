@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { runOnJS } from 'react-native-reanimated';
 
 // Comment git test
+// another test
 
 export default function HomeScreen() {
   const router = useRouter();
