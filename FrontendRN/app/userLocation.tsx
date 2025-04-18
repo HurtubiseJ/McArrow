@@ -74,7 +74,7 @@ export default function UserLocationScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: 'stretch',
     justifyContent: 'center',
     padding: 20,
   },
