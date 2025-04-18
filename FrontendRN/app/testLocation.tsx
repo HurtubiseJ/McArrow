@@ -38,16 +38,6 @@ export default function TestLocationScreen() {
     const [heading, setHeading] = useState<number>(0);
 
     useEffect(() => {
-        Magnetometer.setUpdateInterval(500); // Half a second
-        const sub = Magnetometer.addListener(({x, y}) => {
-            let deg = Math.atan2(y, x) * (180 / Math.PI);
-            if (deg < 0) deg += 360;
-            setHeading(deg);
-        });
-        return () => sub.remove();
-    }, []);
-
-    useEffect(() => {
         async function getCurrentLocation() {
             console.log("In Get location");
           if (Platform.OS === 'android' && !Device.isDevice) {
@@ -113,6 +103,23 @@ export default function TestLocationScreen() {
         }
         getBearing();
     }, [lat, long]);
+
+    // Calc heading based on device orientation
+    useEffect(() => {
+        let subscriber: Location.LocationSubscription;
+        (async () => {
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                console.warn('Heading permission denied');
+                return;
+            }
+            subscriber = await Location.watchHeadingAsync(headingObj => {
+            const h = headingObj.trueHeading ?? headingObj.magHeading;
+                setHeading(h);
+            });
+        })();
+        return () => subscriber && subscriber.remove();
+    }, []);
 
     if (lat == null || long == null) {
         return (
