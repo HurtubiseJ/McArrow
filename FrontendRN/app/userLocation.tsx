@@ -13,7 +13,7 @@ export default function UserLocationScreen() {
     const router = useRouter();
 
     const handleRightSwipe = () => {
-        router.push('/userLocation');
+        router.push('/combinedTest');
     }
 
     const handleLeftSwipe = () => {
