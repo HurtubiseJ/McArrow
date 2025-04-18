@@ -6,9 +6,9 @@ import { View, Text, StyleSheet, Platform } from 'react-native';
 import { useEffect, useState } from "react";
 import * as Location from 'expo-location';
 import * as Device from 'expo-device';
-// import Arrow3D from '../components/arrow';
-
-// Test branch
+import Arrow3D from '../components/arrow';
+import TestCube3D from '../components/testCube3D';
+import { Magnetometer } from "expo-sensors";
 
 
 export default function TestLocationScreen() {
@@ -34,6 +34,18 @@ export default function TestLocationScreen() {
     const [locationLong, setLocationLong] = useState<number | null>(null);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [bearing, setBearing] = useState<number | null>(null);
+
+    const [heading, setHeading] = useState<number>(0);
+
+    useEffect(() => {
+        Magnetometer.setUpdateInterval(500); // Half a second
+        const sub = Magnetometer.addListener(({x, y}) => {
+            let deg = Math.atan2(y, x) * (180 / Math.PI);
+            if (deg < 0) deg += 360;
+            setHeading(deg);
+        });
+        return () => sub.remove();
+    }, []);
 
     useEffect(() => {
         async function getCurrentLocation() {
@@ -102,37 +114,40 @@ export default function TestLocationScreen() {
         getBearing();
     }, [lat, long]);
 
-    if (lat === null || long === null) {
+    if (lat == null || long == null) {
         return (
             <View style={styles.container}>
-                <Text>Loading location...</Text>
+                <Text>Finding nearest McDonalds…</Text>
+            </View>
+        );
+    }
+    
+    if (bearing == null) {
+        return (
+            <View style={styles.container}>
+                <Text>Calculating bearing…</Text>
             </View>
         );
     }
 
-    return(
+    const arrowAngle = ((bearing - heading) + 360) % 360;
+
+    return (
         <GestureDetector gesture={panGuesture}>
-            <View style={styles.container}>
-                <Text>USER</Text>
-                <Text>Latitude:  {lat}</Text>
-                <Text>Longitude: {long}</Text>
-                <Text>LOCATION</Text>
-                <Text>Latitude:  {locationLat}</Text>
-                <Text>Longitude: {locationLong}</Text>
-                <Text>Bearing: {bearing}</Text>
-                {/* <View style={{ flex: 1 }}>
-                    <Arrow3D bearing={128} color="#ff4500" />
-                </View> */}
+          <View style={styles.container}>
+            <View style={{ flex: 1, alignSelf: 'stretch' }}>
+              <Arrow3D bearing={arrowAngle} color="#ff4500" />
+              {/* <TestCube3D /> */}
             </View>
+          </View>
         </GestureDetector>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1, 
-        justifyContent: "center", 
-        alignItems: "center",
-        backgroundColor: 'white',
-    }
-});
+      flex: 1,
+      alignItems: 'stretch',     
+      justifyContent: 'center',
+    },
+  });
