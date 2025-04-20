@@ -75,7 +75,7 @@ export default function TestLocationScreen() {
         const fetchNearest = async () => {
             if (locationLat !== null && locationLong !== null) {
                 try {
-                    const result = await getNearestLocation(locationLat, locationLong, "McDonalds");
+                    const result = await getNearestLocation(locationLat, locationLong, "Dairy Queen");
                     if (result) {
                         setLat(result.lat);
                         setLong(result.lng);
@@ -97,8 +97,6 @@ export default function TestLocationScreen() {
     useEffect(() => {
         const getBearing = () => {
             const bearing = calcBearing(locationLat, locationLong, lat, long);
-            console.log("Bearing:");
-            console.log(bearing);
             setBearing(bearing);
         }
         getBearing();
