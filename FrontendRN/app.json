@@ -38,6 +38,14 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Allow $(name) to use your location."
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
       ]
     ],
     "experiments": {
@@ -52,5 +60,9 @@
       }
     },
     "owner": "adv-software-design"
+  },
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-12345678910~123456459",
+    "ios_app_id": "ca-app-pub-8480296628203141~3508825547"
   }
 }
