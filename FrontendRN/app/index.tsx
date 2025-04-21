@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, Platform, Button } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useRouter } from 'expo-router';
 import Arrow3D from '@/components/arrow';
 import * as Location from 'expo-location';
 import * as Device from 'expo-device';
 import calcBearing, { getNearestLocation } from '@/lib/locationUtil';
+import { runOnJS } from 'react-native-reanimated';
+
 
 export default function HomeScreen() {
-    // Pages of locations 
+    // locations 
     const [screenIndex, setScreenIndex] = useState<number>(0);
     const Locations = [
         ['McDonalds', '#ed2828'],
@@ -17,18 +19,29 @@ export default function HomeScreen() {
         ['Culvers',     '#00aaff'],
     ];
 
-    // Swipe navigation 
+    //Swipe navigation (switches arrow doesnt use router)
     const router = useRouter();
+
+    const onSwipeLeft = useCallback(() => {
+        setScreenIndex(i => Math.min(i + 1, Locations.length - 1));
+    }, []);
+    const onSwipeRight = useCallback(() => {
+        setScreenIndex(i => Math.max(i - 1, 0));
+    }, []);
+
     const panGesture = Gesture.Pan().onEnd(event => {
-        if (Math.abs(event.translationX) < 50) return;
-        if (event.translationX < -50 && screenIndex < Locations.length - 1) {
-            setScreenIndex(i => i + 1);
-        } else if (event.translationX > 50 && screenIndex > 0) {
-            setScreenIndex(i => i - 1);
+        'worklet';
+        const { translationX } = event;
+        if (Math.abs(translationX) < 50) return;
+
+        if (translationX < -50) {
+            runOnJS(onSwipeLeft)();
+        } else if (translationX > 50) {
+            runOnJS(onSwipeRight)();
         }
     });
 
-    // — State for all our coords/headings —
+    //State for all our coords/headings 
     const [locationLat, setLocationLat] = useState<number | null>(null);
     const [locationLong, setLocationLong] = useState<number | null>(null);
     const [lat, setLat]   = useState<number | null>(null);
@@ -36,7 +49,7 @@ export default function HomeScreen() {
     const [bearing, setBearing] = useState<number | null>(null);
     const [heading, setHeading] = useState<number>(0);
 
-    //Poll user GPS every 5s (only on mount)
+    //Poll user GPS every 5s
     useEffect(() => {
         async function getCurrentLocation() {
             console.log('In Get location');
@@ -58,7 +71,7 @@ export default function HomeScreen() {
         return () => clearInterval(interval);
     }, []);
 
-    //Fetch nearest store when user loc OR page changes
+    //Fetch nearest store when user loc/page changes
     useEffect(() => {
         if (locationLat == null || locationLong == null) return;
         (async () => {
@@ -120,13 +133,15 @@ export default function HomeScreen() {
     }
 
     const arrowAngle = ((bearing - heading) + 360) % 360;
+    const [, color] = Locations[screenIndex];
+
     return (
         <GestureDetector gesture={panGesture}>
             <View style={styles.container}>
                 <Arrow3D
                     bearing={arrowAngle}
-                    color={Locations[screenIndex][1]}
-                />
+                    color={color}
+                />                    
             </View>
         </GestureDetector>
     );

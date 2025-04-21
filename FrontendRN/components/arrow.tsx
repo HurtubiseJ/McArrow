@@ -4,100 +4,142 @@ import { GLView } from 'expo-gl';
 import * as THREE from 'three';
 
 type ArrowProps = {
-  bearing: number;    // degrees, where 0 = “north”
-  color: string;      // CSS hex, e.g. "#ff4500"
+    bearing: number;    // degrees, where 0 = “north”
+    color:   string;    // CSS hex, e.g. "#ff4500"
 };
 
 export default function Arrow3D({ bearing, color }: ArrowProps) {
-  const bearingRef = useRef(bearing);
-  useEffect(() => {
-    bearingRef.current = bearing;
-  }, [bearing]);
+    // refs to hold Three objects and the frame ID
+    const bearingRef       = useRef(bearing);
+    const arrowRef         = useRef<THREE.Group>();
+    const rendererRef      = useRef<THREE.WebGLRenderer>();
+    const sceneRef         = useRef<THREE.Scene>();
+    const cameraRef        = useRef<THREE.PerspectiveCamera>();
+    const animationFrameId = useRef<number>();
 
-  const arrowRef = useRef<THREE.Group>();
+    // keep latest bearing in a ref
+    useEffect(() => {
+        bearingRef.current = bearing;
+    }, [bearing]);
 
-  const onContextCreate = (gl: any) => {
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x222222);
+    useEffect(() => {
+        if (arrowRef.current) {
+            arrowRef.current.traverse(obj => {
+            if ((obj as THREE.Mesh).isMesh) {
+                ((obj as THREE.Mesh).material as THREE.MeshStandardMaterial)
+                    .color.set(color);
+            }
+            });
+        }
+    }, [color]);
 
-    const camera = new THREE.PerspectiveCamera(
-      60,
-      gl.drawingBufferWidth / gl.drawingBufferHeight,
-      0.1,
-      1000
+    // this fires once when GLView's context is ready
+    const onContextCreate = (gl: any) => {
+        // 1) scene + camera
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x222222);
+        sceneRef.current = scene;
+
+        const camera = new THREE.PerspectiveCamera(
+            60,
+            gl.drawingBufferWidth / gl.drawingBufferHeight,
+            0.1,
+            1000
+        );
+        camera.position.set(0, 0, 6);
+        cameraRef.current = camera;
+
+        // 2) minimal canvas stub
+        const fakeCanvas = {
+            width:  gl.drawingBufferWidth,
+            height: gl.drawingBufferHeight,
+            style:  {},
+            addEventListener:    (_: string, __: any) => {},
+            removeEventListener: (_: string, __: any) => {},
+            dispatchEvent:       (_: any) => false,
+            getContext:          () => gl,
+        };
+
+        // 3) renderer
+        const renderer = new THREE.WebGLRenderer({
+            canvas:   fakeCanvas as any,
+            context:  gl,
+            antialias: true,
+        });
+        renderer.setSize(gl.drawingBufferWidth, gl.drawingBufferHeight);
+        rendererRef.current = renderer;
+
+        // 4) lights
+        const amb = new THREE.AmbientLight(color, 0.5);
+        const dir = new THREE.DirectionalLight(color, 0.8);
+        dir.position.set(2, 2, 2);
+        scene.add(amb, dir);
+
+        // 5) arrow geometry
+        const group    = new THREE.Group();
+        const shaftGeo = new THREE.CylinderGeometry(0.02, 0.02, 1, 16);
+        const headGeo  = new THREE.ConeGeometry(0.06, 0.2, 16);
+        const mat      = new THREE.MeshStandardMaterial({ color });
+
+        const shaft = new THREE.Mesh(shaftGeo, mat);
+        const head  = new THREE.Mesh(headGeo, mat);
+        shaft.position.y = 0.5;
+        head.position.y  = 1.1;
+        group.add(shaft, head);
+
+        group.position.set(0, 0, 0);
+        group.scale.set(1.5, 1.5, 1.5);
+
+        scene.add(group);
+        arrowRef.current = group;
+
+        // 6) render loop
+        const animate = () => {
+            animationFrameId.current = requestAnimationFrame(animate);
+            if (arrowRef.current) {
+                arrowRef.current.rotation.z =
+                    THREE.MathUtils.degToRad(-bearingRef.current);
+            }
+            renderer.render(scene, camera);
+            gl.endFrameEXP();
+        };
+        animate();
+    };
+
+    // 7) cleanup on unmount
+    useEffect(() => {
+        return () => {
+            // cancel the animation frame
+            if (animationFrameId.current != null) {
+                cancelAnimationFrame(animationFrameId.current);
+            }
+            // dispose renderer & clear scene
+            if (rendererRef.current) {
+                rendererRef.current.dispose();
+            }
+            if (sceneRef.current) {
+                sceneRef.current.clear();
+            }
+        };
+    }, []);
+
+    return (
+        <View style={styles.container}>
+            <GLView
+                style={styles.glView}
+                onContextCreate={onContextCreate}
+            />
+        </View>
     );
-    camera.position.set(0, 0, 6);
-
-    const fakeCanvas = {
-      width: gl.drawingBufferWidth,
-      height: gl.drawingBufferHeight,
-      style: {},
-      addEventListener:    (_: string, __: any) => {},
-      removeEventListener: (_: string, __: any) => {},
-      dispatchEvent:       (_: any) => false,
-      getContext:          () => gl,
-    };
-
-    const renderer = new THREE.WebGLRenderer({
-      canvas:  fakeCanvas as any,
-      context: gl,
-      antialias: true,
-    });
-    renderer.setSize(gl.drawingBufferWidth, gl.drawingBufferHeight);
-
-    const amb = new THREE.AmbientLight(color, 0.5);
-    const dir = new THREE.DirectionalLight(color, 0.8);
-    dir.position.set(2, 2, 2);
-    scene.add(amb, dir);
-
-    // Build arrow geometry (shaft + head)
-    const group    = new THREE.Group();
-    const shaftGeo = new THREE.CylinderGeometry(0.02, 0.02, 1, 16);
-    const headGeo  = new THREE.ConeGeometry(0.06, 0.2, 16);
-    const mat      = new THREE.MeshStandardMaterial({ color });
-
-    const shaft = new THREE.Mesh(shaftGeo, mat);
-    const head  = new THREE.Mesh(headGeo, mat);
-    shaft.position.y = 0.5;
-    head.position.y  = 1.1;
-    group.add(shaft, head);
-
-    group.position.set(0, 0, 0);
-    group.scale.set(1.5, 1.5, 1.5);
-
-    scene.add(group);
-    arrowRef.current = group;
-
-    const animate = () => {
-      requestAnimationFrame(animate);
-
-      if (arrowRef.current) {
-        arrowRef.current.rotation.z = THREE.MathUtils.degToRad(-bearingRef.current);
-      }
-
-      renderer.render(scene, camera);
-      gl.endFrameEXP();
-    };
-    animate();
-  };
-
-  return (
-    <View style={styles.container}>
-      <GLView
-        style={styles.glView}
-        onContextCreate={onContextCreate}
-      />
-    </View>
-  );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'stretch',
-  },
-  glView: {
-    flex: 1,
-    alignSelf: 'stretch',
-  },
+    container: {
+        flex: 1,
+        alignItems: 'stretch',
+    },
+    glView: {
+        flex: 1,
+        alignSelf: 'stretch',
+    },
 });
