@@ -48,6 +48,17 @@ export default function HomeScreen() {
     const [long, setLong] = useState<number | null>(null);
     const [bearing, setBearing] = useState<number | null>(null);
     const [heading, setHeading] = useState<number>(0);
+    const [distance, setDistance] = useState<number>(100);
+
+    //Path tracking
+    type cords = {
+        lat: number,
+        lng: number,
+    }
+    const path = [];
+    const addToPath = ({lat, lng}: cords) => {
+        path.push({lat, lng});
+    };
 
     //Poll user GPS every 5s
     useEffect(() => {
@@ -63,13 +74,40 @@ export default function HomeScreen() {
             }
             const loc = await Location.getCurrentPositionAsync({});
             console.log('Got user coords:', loc.coords);
-            setLocationLat(loc.coords.latitude);
-            setLocationLong(loc.coords.longitude);
+            const locLat = loc.coords.latitude; 
+            const locLng = loc.coords.longitude; 
+            setLocationLat(locLat);
+            setLocationLong(locLng);
+
+            console.log("Inside get user location distance:");
+            const latRad = locLat * (Math.PI / 180);
+            const lngRad = locLng * (Math.PI / 180);
+        
+            const latLocRad = lat * (Math.PI / 180); 
+            const lngLocRad = lng * (Math.PI / 180);
+        
+            const dist = 2 * 6371 * Math.asin((Math.sqrt(Math.sin(latLocRad - latRad)**2)/2
+                    + Math.cos(latRad) * Math.cos(latLocRad) * (Math.sin(lngLocRad - lngRad)**2)/2)); 
+                    
+            console.log(dist);
+            console.log("Finish");
+            setDistance(dist);
+            addToPath({locLat, locLng});
         }
         getCurrentLocation();
         const interval = setInterval(getCurrentLocation, 5000);
         return () => clearInterval(interval);
     }, []);
+
+    //Set next screen if dist close
+    useEffect(() => {
+        console.log("Distance");
+        console.log(distance);
+        if (distance < 1.5) {
+            // Complete path go to next page
+            router.push("/testLocation");
+        }
+    }, [distance]);
 
     //Fetch nearest store when user loc/page changes
     useEffect(() => {

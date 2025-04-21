@@ -54,3 +54,15 @@ export default function calcBearing(lat: number, lng: number, latLocation: numbe
     const bearing = (b + 360) % 360; // Normalize to 0–360°
     return bearing;
 }
+
+export async function getDistance(lat: number, lng: number, latLocation: number, lngLocation: number){
+    const latRad = lat * (Math.PI / 180);
+    const lngRad = lng * (Math.PI / 180);
+
+    const latLocRad = latLocation * (Math.PI / 180); 
+    const lngLocRad = lngLocation * (Math.PI / 180);
+
+    const dist = 2 * 6371 * Math.asin((Math.sqrt(Math.sin(latLocRad - latRad)**2)/2
+            + Math.cos(latRad) * Math.cos(latLocRad) * (Math.sin(lngLocRad - lngRad)**2)/2));
+    return dist;
+};

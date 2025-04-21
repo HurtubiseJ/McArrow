@@ -77,10 +77,10 @@ export default function Arrow3D({ bearing, color }: ArrowProps) {
 
         leftLight.current  = new THREE.RectAreaLight(color, opts.intensity, opts.width, opts.height);   rightLight.current = new THREE.RectAreaLight(color, opts.intensity, opts.width, opts.height);
 
-        leftLight.current.position.set(-1, 2, -1.5);
-        leftLight.current.lookAt(0, 1, 2);
+        leftLight.current.position.set(-1, 2, -1.2);
+        leftLight.current.lookAt(0, 1, 1);
         rightLight.current.position.set( 1, 2, -1.5);
-        rightLight.current.lookAt(0, 1, 2);
+        rightLight.current.lookAt(0, 1, 1);
         
 
         scene.add(leftLight.current, rightLight.current);
@@ -124,7 +124,7 @@ export default function Arrow3D({ bearing, color }: ArrowProps) {
 
         group.add(shaft, head);
 
-        group.rotation.x = -Math.PI / 3;
+        group.rotation.x = -Math.PI / 8;
 
         group.position.set(0, centerY + 0.1, 0);
 
