@@ -44,8 +44,8 @@ export default function HomeScreen() {
     //State for all our coords/headings 
     const [locationLat, setLocationLat] = useState<number | null>(null);
     const [locationLong, setLocationLong] = useState<number | null>(null);
-    const [lat, setLat]   = useState<number | null>(null);
-    const [long, setLong] = useState<number | null>(null);
+    const [lat, setLat]   = useState<number>(0);
+    const [long, setLong] = useState<number>(0);
     const [bearing, setBearing] = useState<number | null>(null);
     const [heading, setHeading] = useState<number>(0);
     const [distance, setDistance] = useState<number>(100);
@@ -82,12 +82,15 @@ export default function HomeScreen() {
             console.log("Inside get user location distance:");
             const latRad = locLat * (Math.PI / 180);
             const lngRad = locLng * (Math.PI / 180);
-        
+            console.log(latRad);
+            console.log(lngRad);
+
             const latLocRad = lat * (Math.PI / 180); 
-            const lngLocRad = lng * (Math.PI / 180);
+            const lngLocRad = long * (Math.PI / 180);
+            console.log(latLocRad);
+            console.log(lngLocRad);
         
-            const dist = 2 * 6371 * Math.asin((Math.sqrt(Math.sin(latLocRad - latRad)**2)/2
-                    + Math.cos(latRad) * Math.cos(latLocRad) * (Math.sin(lngLocRad - lngRad)**2)/2)); 
+            const dist = 2 * 6371 * Math.asin((Math.sqrt(Math.sin(latLocRad - latRad)**2/2 + Math.cos(latRad) * Math.cos(latLocRad) * (Math.sin(lngLocRad - lngRad)**2)/2))); 
                     
             console.log(dist);
             console.log("Finish");
