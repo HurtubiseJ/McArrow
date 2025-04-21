@@ -4,12 +4,11 @@ import { GLView } from 'expo-gl';
 import * as THREE from 'three';
 
 type ArrowProps = {
-    bearing: number;    // degrees, where 0 = “north”
-    color:   string;    // CSS hex, e.g. "#ff4500"
+    bearing: number;  //degrees, where 0 = “north”
+    color:   string;  //CSS hex, e.g. "#ff4500"
 };
 
 export default function Arrow3D({ bearing, color }: ArrowProps) {
-    // refs to hold Three objects and the frame ID
     const bearingRef       = useRef(bearing);
     const arrowRef         = useRef<THREE.Group>();
     const rendererRef      = useRef<THREE.WebGLRenderer>();
@@ -17,7 +16,6 @@ export default function Arrow3D({ bearing, color }: ArrowProps) {
     const cameraRef        = useRef<THREE.PerspectiveCamera>();
     const animationFrameId = useRef<number>();
 
-    // keep latest bearing in a ref
     useEffect(() => {
         bearingRef.current = bearing;
     }, [bearing]);
@@ -33,9 +31,7 @@ export default function Arrow3D({ bearing, color }: ArrowProps) {
         }
     }, [color]);
 
-    // this fires once when GLView's context is ready
     const onContextCreate = (gl: any) => {
-        // 1) scene + camera
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x222222);
         sceneRef.current = scene;
@@ -49,7 +45,6 @@ export default function Arrow3D({ bearing, color }: ArrowProps) {
         camera.position.set(0, 0, 6);
         cameraRef.current = camera;
 
-        // 2) minimal canvas stub
         const fakeCanvas = {
             width:  gl.drawingBufferWidth,
             height: gl.drawingBufferHeight,
@@ -60,7 +55,6 @@ export default function Arrow3D({ bearing, color }: ArrowProps) {
             getContext:          () => gl,
         };
 
-        // 3) renderer
         const renderer = new THREE.WebGLRenderer({
             canvas:   fakeCanvas as any,
             context:  gl,
@@ -69,13 +63,13 @@ export default function Arrow3D({ bearing, color }: ArrowProps) {
         renderer.setSize(gl.drawingBufferWidth, gl.drawingBufferHeight);
         rendererRef.current = renderer;
 
-        // 4) lights
+        // lights
         const amb = new THREE.AmbientLight(color, 0.5);
         const dir = new THREE.DirectionalLight(color, 0.8);
         dir.position.set(2, 2, 2);
         scene.add(amb, dir);
 
-        // 5) arrow geometry
+        //arrow geometry
         const group    = new THREE.Group();
         const shaftGeo = new THREE.CylinderGeometry(0.02, 0.02, 1, 16);
         const headGeo  = new THREE.ConeGeometry(0.06, 0.2, 16);
@@ -93,7 +87,7 @@ export default function Arrow3D({ bearing, color }: ArrowProps) {
         scene.add(group);
         arrowRef.current = group;
 
-        // 6) render loop
+        //render loop
         const animate = () => {
             animationFrameId.current = requestAnimationFrame(animate);
             if (arrowRef.current) {
@@ -106,14 +100,12 @@ export default function Arrow3D({ bearing, color }: ArrowProps) {
         animate();
     };
 
-    // 7) cleanup on unmount
+    //cleanup on unmount
     useEffect(() => {
         return () => {
-            // cancel the animation frame
             if (animationFrameId.current != null) {
                 cancelAnimationFrame(animationFrameId.current);
             }
-            // dispose renderer & clear scene
             if (rendererRef.current) {
                 rendererRef.current.dispose();
             }
