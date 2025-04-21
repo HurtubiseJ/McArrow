@@ -19,10 +19,8 @@ export default function Arrow3D({ bearing, color }: ArrowProps) {
     const leftLight   = useRef<THREE.RectAreaLight>(null!);
     const rightLight  = useRef<THREE.RectAreaLight>(null!);  
 
-    // keep the latest bearing
     useEffect(() => { bearingRef.current = bearing; }, [bearing]);
 
-    // re‑tint arrow if the theme color changes
     useEffect(() => {
         if (arrowRef.current) {
             arrowRef.current.traverse(obj => {
@@ -40,7 +38,6 @@ export default function Arrow3D({ bearing, color }: ArrowProps) {
     }, [color]);
 
     const onContextCreate = (gl: any) => {
-        // — Scene & Camera —
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x000000);
         sceneRef.current = scene;
@@ -54,7 +51,6 @@ export default function Arrow3D({ bearing, color }: ArrowProps) {
         camera.position.set(0, 2, 6);
         camera.lookAt(0, 1, 1);
 
-        // — Renderer + shadows —
         const fakeCanvas = {
             width:  gl.drawingBufferWidth,
             height: gl.drawingBufferHeight,
@@ -75,7 +71,6 @@ export default function Arrow3D({ bearing, color }: ArrowProps) {
         renderer.physicallyCorrectLights = true;
         rendererRef.current = renderer;
 
-        // — Vertical colored backlights —
         RectAreaLightUniformsLib.init();
         const opts = { intensity: 7, width: 0.5, height: 2.5 };
         
@@ -95,12 +90,10 @@ export default function Arrow3D({ bearing, color }: ArrowProps) {
             new RectAreaLightHelper(rightLight.current)
         );
 
-        // — Soft overhead fill —
         const fill = new THREE.DirectionalLight(0xffffff, 0.1);
         fill.position.set(0, 10, 0);
         scene.add(fill);
 
-        // — Ground plane as a brighter white box —
         const floorGeo = new THREE.BoxGeometry(20, 0.2, 20);
         const floorMat = new THREE.MeshStandardMaterial({
             color:     0xfafafa,
@@ -112,9 +105,7 @@ export default function Arrow3D({ bearing, color }: ArrowProps) {
         floor.receiveShadow = true;
         scene.add(floor);
 
-        // — Arrow geometry (shaft + pyramid head) —
-        // compute pivot at center
-        const totalH = 1 + 0.6;    // shaft height + head height
+        const totalH = 1 + 0.6;    
         const centerY = totalH / 2;
 
         const group    = new THREE.Group();
@@ -123,7 +114,7 @@ export default function Arrow3D({ bearing, color }: ArrowProps) {
         const mat      = new THREE.MeshStandardMaterial({ color });
 
         const shaft = new THREE.Mesh(shaftGeo, mat);
-        // position relative to pivot at centerY
+
         shaft.position.y = 0.5  - centerY;
         shaft.castShadow = true;
 
@@ -133,16 +124,13 @@ export default function Arrow3D({ bearing, color }: ArrowProps) {
 
         group.add(shaft, head);
 
-        // slight tilt for depth
         group.rotation.x = -Math.PI / 3;
 
-        // lift the centered arrow above the floor
         group.position.set(0, centerY + 0.1, 0);
 
         scene.add(group);
         arrowRef.current = group;
 
-        // — Animation loop —
         const animate = () => {
             frameRef.current = requestAnimationFrame(animate);
             if (arrowRef.current) {
@@ -155,7 +143,6 @@ export default function Arrow3D({ bearing, color }: ArrowProps) {
         animate();
     };
 
-    // cleanup
     useEffect(() => () => {
         if (frameRef.current) cancelAnimationFrame(frameRef.current);
         rendererRef.current?.dispose();
