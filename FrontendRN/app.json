@@ -9,13 +9,19 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.adv-software-design.mcarrow"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "com.google.android.gms.permission.AD_ID"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -46,7 +52,15 @@
             "useFrameworks": "static"
           }
         }
-      ]
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "android_app_id": "ca-app-pub-8480296628203141~3508825547",
+          "ios_app_id": "ca-app-pub-8480296628203141~3508825547"
+        }
+      ],
+      "expo-tracking-transparency"
     ],
     "experiments": {
       "typedRoutes": true
@@ -60,9 +74,5 @@
       }
     },
     "owner": "adv-software-design"
-  },
-  "react-native-google-mobile-ads": {
-    "android_app_id": "ca-app-pub-12345678910~123456459",
-    "ios_app_id": "ca-app-pub-8480296628203141~3508825547"
   }
 }
