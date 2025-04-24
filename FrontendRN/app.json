@@ -20,8 +20,12 @@
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",
+        "com.google.android.gms.permission.AD_ID",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
         "com.google.android.gms.permission.AD_ID"
-      ]
+      ],
+      "package": "com.advsoftwaredesign.mcarrow"
     },
     "web": {
       "bundler": "metro",

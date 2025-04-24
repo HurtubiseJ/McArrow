@@ -7,7 +7,6 @@ import * as Location from 'expo-location';
 import * as Device from 'expo-device';
 import calcBearing, { getNearestLocation } from '@/lib/locationUtil';
 import { runOnJS } from 'react-native-reanimated';
-import mobileAds from 'react-native-google-mobile-ads';
 
 export default function HomeScreen() {
   // locations 
@@ -40,20 +39,6 @@ export default function HomeScreen() {
       runOnJS(onSwipeRight)();
     }
   });
-
-  // Initialize Google Mobile Ads SDK
-  useEffect(() => {
-    (async () => {
-      // Google AdMob will show any messages here that you just set up on the AdMob Privacy & Messaging page
-      const { status: trackingStatus } = await requestTrackingPermissionsAsync();
-      if (trackingStatus !== 'granted') {
-        // Do something here such as turn off Sentry tracking, store in context/redux to allow for personalized ads, etc.
-      }
-
-      // Initialize the ads
-      await mobileAds().initialize();
-    })();
-  }, [])
 
   //State for all our coords/headings 
   const [locationLat, setLocationLat] = useState<number | null>(null);
