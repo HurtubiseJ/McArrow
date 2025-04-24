@@ -57,15 +57,13 @@
           }
         }
       ],
-      [
-        "react-native-google-mobile-ads",
+      "expo-tracking-transparency"
+    ],
+    "react-native-google-mobile-ads":
         {
           "android_app_id": "ca-app-pub-8480296628203141~3508825547",
           "ios_app_id": "ca-app-pub-8480296628203141~3508825547"
-        }
-      ],
-      "expo-tracking-transparency"
-    ],
+        },
     "experiments": {
       "typedRoutes": true
     },
