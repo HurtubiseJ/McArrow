@@ -15,16 +15,22 @@ const InlineAd = () => {
   return (
     <View style={{ height: isAdLoaded ? 'auto' : 0 }}>
       <BannerAd
-        // It is extremely important to use test IDs as you can be banned/restricted by Google AdMob for inappropriately using real ad banners during testing
         unitId={__DEV__ ? TestIds.BANNER : productionID}
         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
         requestOptions={{
           requestNonPersonalizedAdsOnly: true,
-          // You can change this setting depending on whether you want to use the permissions tracking we set up in the initializing
         }}
         onAdLoaded={() => {
+          console.log('Banner Ad loaded successfully');
           setIsAdLoaded(true);
         }}
+        onAdFailedToLoad={(error) => {
+          console.error('Banner Ad failed to load: ', error);
+          setIsAdLoaded(false); // Ensure container stays hidden if ad fails
+        }}
+        // Optional: Add more event listeners for debugging if needed
+        // onAdOpened={() => console.log('Ad opened')}
+        // onAdClosed={() => console.log('Ad closed')}
       />
     </View >
   );

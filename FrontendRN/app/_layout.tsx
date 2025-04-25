@@ -7,6 +7,7 @@ import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
 import InlineAd from './inLineAd'; // Import the ad component
 
 export default function RootLayout() {
+  // ...existing useEffect...
   // Initialize Google Mobile Ads SDK
   useEffect(() => {
     (async () => {
@@ -41,8 +42,11 @@ export default function RootLayout() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Stack screenOptions={{ headerShown: false }} />
-      {/* Place the InlineAd component at the bottom */}
+      {/* Content Area */}
+      <View style={styles.contentContainer}>
+        <Stack screenOptions={{ headerShown: true }} />
+      </View>
+      {/* Ad Container Area */}
       <View style={styles.adContainer}>
         <InlineAd />
       </View>
@@ -53,9 +57,18 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'lightblue', // TEMP: To see SafeAreaView bounds
+  },
+  contentContainer: {
+    flex: 1, // Allows this view to grow and fill available space ABOVE the ad
+    backgroundColor: 'lightcoral', // TEMP: To see content bounds
+    overflow: 'hidden', // Prevent content from spilling if layout is wrong
   },
   adContainer: {
-    // Position the ad container at the bottom
-    // The InlineAd component itself controls its height based on load status
+    // This container will naturally sit below the flex: 1 content
+    // Its height will be determined by the InlineAd component's content
+    width: '100%', // Ensure it spans the width
+    alignItems: 'center', // Center the ad horizontally
+    backgroundColor: 'lightgreen', // TEMP: To see ad container bounds
   },
 });
