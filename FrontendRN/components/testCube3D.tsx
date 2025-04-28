@@ -5,7 +5,6 @@ import * as THREE from 'three';
 
 export default function TestCube3D() {
   const onContextCreate = (gl: any) => {
-    // 1) Create scene + camera
     const scene  = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
       75,
@@ -15,7 +14,6 @@ export default function TestCube3D() {
     );
     camera.position.z = 5;
 
-    // 2) Fake canvas shim with EventTarget methods
     const fakeCanvas = {
       width:  gl.drawingBufferWidth,
       height: gl.drawingBufferHeight,
@@ -26,7 +24,6 @@ export default function TestCube3D() {
       getContext:          () => gl,
     };
 
-    // 3) Create WebGLRenderer backed by our GLView's context
     const renderer = new THREE.WebGLRenderer({
       canvas:   fakeCanvas as any,
       context:  gl,
@@ -35,13 +32,11 @@ export default function TestCube3D() {
     renderer.setSize(gl.drawingBufferWidth, gl.drawingBufferHeight);
     scene.background = new THREE.Color(0x888888);
 
-    // 4) Build your cube (or arrow later)
     const geo  = new THREE.BoxGeometry(2, 2, 2);
     const mat  = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
     const cube = new THREE.Mesh(geo, mat);
     scene.add(cube);
 
-    // 5) One render loop that uses those variables
     let firstFrame = true;
     const animate = () => {
       requestAnimationFrame(animate);
@@ -70,7 +65,7 @@ export default function TestCube3D() {
       <GLView
         style={{
             flex: 1,
-            alignSelf: 'stretch',  // override parent’s alignItems
+            alignSelf: 'stretch', 
             width: '100%',
             height: '100%',
             borderWidth: 2,

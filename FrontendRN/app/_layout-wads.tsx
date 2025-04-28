@@ -1,4 +1,3 @@
-// filepath: /Users/cullenbaker/code/McArrow/FrontendRN/app/_layout.tsx
 import { Slot } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useEffect } from 'react';
@@ -6,19 +5,15 @@ import { Stack } from 'expo-router';
 import { SafeAreaView, View, StyleSheet } from 'react-native';
 import mobileAds, { MaxAdContentRating } from 'react-native-google-mobile-ads';
 import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
-import InlineAd from './inLineAd'; // Import the ad component
+import InlineAd from './inLineAd';
 
 export default function RootLayout() {
-  // ...existing useEffect...
-  // Initialize Google Mobile Ads SDK
   useEffect(() => {
     (async () => {
       // Request tracking permission (necessary for personalized ads)
       const { status: trackingStatus } = await requestTrackingPermissionsAsync();
       if (trackingStatus !== 'granted') {
         console.log("Tracking permission not granted. Ads may be non-personalized.");
-        // Consider setting requestNonPersonalizedAdsOnly based on this status
-        // or using a state management solution to pass this preference to InlineAd
       }
 
       // Configure AdMob settings (optional)
@@ -44,11 +39,9 @@ export default function RootLayout() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Content Area */}
       <GestureHandlerRootView style={styles.container}>
             <Slot />
       </GestureHandlerRootView>
-      {/* Ad Container Area */}
       <View style={styles.adContainer}>
         <InlineAd />
       </View>

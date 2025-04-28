@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Platform, Button } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useRouter } from 'expo-router';
 import Arrow3D from '@/components/arrow';
+import Arrow from '@/components/arrow2d';
 import * as Location from 'expo-location';
 import * as Device from 'expo-device';
 import calcBearing, { getNearestLocation } from '@/lib/locationUtil';
@@ -18,7 +19,6 @@ export default function HomeScreen() {
     ['Culvers', '#00aaff'],
   ];
 
-  //Swipe navigation (switches arrow doesnt use router)
   const router = useRouter();
 
   const onSwipeLeft = useCallback(() => {
@@ -174,14 +174,16 @@ export default function HomeScreen() {
 
   const arrowAngle = ((bearing - heading) + 360) % 360;
   const [, color] = Locations[screenIndex];
+  const name = Locations[screenIndex][0];
 
   return (
     <GestureDetector gesture={panGesture}>
       <View style={styles.container}>
-        <Arrow3D
+        {/* <Arrow3D
           bearing={arrowAngle}
           color={color}
-        />
+        /> */}
+        <Arrow color={color} bearing={arrowAngle} size={80} label={name}/> 
       </View>
     </GestureDetector>
   );
@@ -198,7 +200,7 @@ function Loading({ text }: { text: string }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#222',
+    backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'stretch',
   },
