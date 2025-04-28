@@ -7,8 +7,9 @@ Testing Features
         - Google API service
         - Path tracking 
         - Path scoring
+    - Because there is no "right answer" to most of the things we would test (Ex. the coordinates we pull from the device will constantly change) I think most of our tests will just make sure that the API calls are returns data in the correct format and not necessarily the correct data.
         
 2) Manual tests
     - Navigation and button presses
     - User login (Can also be automated as unit test)
-    - 
+    - Making sure our arrow is actually pointing to the closest restaurant. 

@@ -4,11 +4,12 @@ Github Partnership agreement
 We do not have strict rules for small additions. We simply always run git pull before making changes
 and git push after finishing work. This ensures we are able to make progress on the app with minimal
 time spent on organizing git work flow. We for the most part work on different parts of the application
-so we rarely run into merdge conflicts.
+so we rarely run into merge conflicts.
 
 2) Large Features / Changes
-Sometimes we will want to change or add large feautures which conflict with each others work. In this
-case we dicuss the problem in class and decide the best way to impliment both features. Most of the 
-time we do this by creating a branch. Then, once we meet together in class we merdge the branches 
+Sometimes we will want to change or add large features which conflict with each others work. In this
+case we discuss the problem in class and decide the best way to implement both features. Most of the 
+time we do this by creating a branch. Then, once we meet together in class we merge the branches 
 in order to have up to date code bases. We usually do not code review before pulling and
-just hope for the best. If merdge conflicts arise we work through them together. Lastly, we dicsuss the changes made and anything we need to keep in mind moving forward.
+just hope for the best. If merge conflicts arise we work through them together. Lastly, we discuss the changes made and anything we need to keep in mind moving forward.
+Additionally, if we implement a large feature we make sure to begin our commit message with "STABLE" so it is easy to keep track of which versions still work. 
