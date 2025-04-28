@@ -1,12 +1,19 @@
 Testing Features
 
 1) Unit tests
+    - We will use the React Native Testing library to write our tests. Default
+      react native apps come with this library already installed. This will
+      allow us to impliment functional and frontend formatting tests. For more
+      diffcult features we might need to move to React Native Jest which provides
+      additional testing features.
+
     - Unit tests will cover small integral components to our app, this includes:
         - Native location services, gyroscope, latitude, longitude
         - Bearing calculation
         - Google API service
         - Path tracking 
         - Path scoring
+        
     - Because there is no "right answer" to most of the things we would test (Ex. the coordinates we pull from the device will constantly change) I think most of our tests will just make sure that the API calls are returns data in the correct format and not necessarily the correct data.
         
 2) Manual tests
