@@ -1,0 +1,18 @@
+RUN WITH EXPO
+1) Download expo CLI 
+    - $ npm install -g expo-cli
+    - $ expo --version (Check install)
+
+2) Download expo app iOS or Android (Only tested on iOS)
+    - Go to app store and dowload the expo app (Might need to make an account?)
+
+3) cd into FrontendRN directory
+
+4) Run application
+    - $ npm install (Install packages)
+    - $ npx expo start --clear
+    - This should show a QR code along with more options
+
+5) Open camera on phone and scan terminal QR code (Do not close terminal process)
+
+6) Run '$ npm install' after adding packages

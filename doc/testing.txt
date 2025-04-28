@@ -1,0 +1,14 @@
+Testing Features
+
+1) Unit tests
+    - Unit tests will cover small integral components to our app, this includes:
+        - Native location services, gyroscope, latitude, longitude
+        - Bearing calculation
+        - Google API service
+        - Path tracking 
+        - Path scoring
+        
+2) Manual tests
+    - Navigation and button presses
+    - User login (Can also be automated as unit test)
+    - 
