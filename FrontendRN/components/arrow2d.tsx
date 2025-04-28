@@ -30,7 +30,7 @@ const Arrow: React.FC<ArrowProps> = ({ color, bearing, size = 70, label }) => {
 
   return (
     <View style={styles.wrapper}>
-      <View style={[styles.arrowContainer, { transform: [{ rotate: `${bearing-45}deg` }] }]}>      
+      <View style={[styles.arrowContainer, { transform: [{ rotate: `${bearing}deg` }] }]}>      
         <View
           style={[
             styles.head,

@@ -8,6 +8,8 @@ import * as Location from 'expo-location';
 import * as Device from 'expo-device';
 import calcBearing, { getNearestLocation } from '@/lib/locationUtil';
 import { runOnJS } from 'react-native-reanimated';
+import MapView, { Marker, Polyline } from 'react-native-maps';
+
 
 export default function HomeScreen() {
   // locations 
@@ -48,16 +50,14 @@ export default function HomeScreen() {
   const [bearing, setBearing] = useState<number | null>(null);
   const [heading, setHeading] = useState<number>(0);
   const [distance, setDistance] = useState<number>(100);
+  const [arrived, setArrived] = useState(false);
 
   //Path tracking
   type cords = {
     lat: number,
     lng: number,
   }
-  const path = [];
-  const addToPath = ({ lat, lng }: cords) => {
-    path.push({ lat, lng });
-  };
+  const [path, setPath] = useState<{ latitude: number; longitude: number }[]>([]);
 
   //Poll user GPS every 5s
   useEffect(() => {
@@ -93,8 +93,13 @@ export default function HomeScreen() {
 
       console.log(dist);
       console.log("Finish");
+
+      // Add location to path 
+      setPath(p =>
+        p.concat({ latitude: locLat, longitude: locLng })
+      );
+
       setDistance(dist);
-      addToPath({ locLat, locLng });
     }
     getCurrentLocation();
     const interval = setInterval(getCurrentLocation, 5000);
@@ -106,8 +111,7 @@ export default function HomeScreen() {
     console.log("Distance");
     console.log(distance);
     if (distance < 1.5) {
-      // Complete path go to next page
-      router.push("/testLocation");
+      setArrived(true);
     }
   }, [distance]);
 
@@ -176,16 +180,50 @@ export default function HomeScreen() {
   const [, color] = Locations[screenIndex];
   const name = Locations[screenIndex][0];
 
+  if (!arrived) {
+    return (
+        <GestureDetector gesture={panGesture}>
+            <View style={styles.arrowOverlay}>
+            <Arrow
+                color={Locations[screenIndex][1]}
+                bearing={arrowAngle}
+                size={80}
+                label={name}
+            />
+            </View>
+        </GestureDetector>
+    );
+  }
+
   return (
-    <GestureDetector gesture={panGesture}>
-      <View style={styles.container}>
-        {/* <Arrow3D
-          bearing={arrowAngle}
-          color={color}
-        /> */}
-        <Arrow color={color} bearing={arrowAngle} size={80} label={name}/> 
-      </View>
-    </GestureDetector>
+    <View style={styles.container}>
+      <MapView
+        style={StyleSheet.absoluteFill}
+        showsUserLocation
+        initialRegion={{
+          latitude: path[path.length - 1].latitude,
+          longitude: path[path.length - 1].longitude,
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.005,
+        }}
+        region={{
+          latitude: path[path.length - 1].latitude,
+          longitude: path[path.length - 1].longitude,
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.005,
+        }}
+      >
+        <Polyline
+          coordinates={path}
+          strokeWidth={4}
+          strokeColor={color}
+        />
+        <Marker
+          coordinate={{ latitude: locationLat, longitude: locationLong }}
+          title={name}
+        />
+      </MapView>
+    </View>
   );
 }
 
@@ -198,15 +236,20 @@ function Loading({ text }: { text: string }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'stretch',
-  },
-  text: {
-    color: '#fff',
-    fontSize: 18,
-    textAlign: 'center',
-  },
+    arrowOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    container: {
+        flex: 1,
+        backgroundColor: 'white',
+        justifyContent: 'center',
+        alignItems: 'stretch',
+    },
+    text: {
+        color: '#fff',
+        fontSize: 18,
+        textAlign: 'center',
+    },
 });
