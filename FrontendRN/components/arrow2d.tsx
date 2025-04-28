@@ -57,7 +57,7 @@ const Arrow: React.FC<ArrowProps> = ({ color, bearing, size = 70, label }) => {
               backgroundColor: color,
               width: stemWidth,
               height: stemLength,
-              marginTop: -1, // slight overlap with head base
+              marginTop: -1, 
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 1 },
               shadowOpacity: 0.2,
@@ -68,7 +68,6 @@ const Arrow: React.FC<ArrowProps> = ({ color, bearing, size = 70, label }) => {
         />
       </View>
 
-      {/* Optional label below arrow */}
       {label ? (
         <Text style={[styles.label, { color }]} numberOfLines={1}>
           {label}
