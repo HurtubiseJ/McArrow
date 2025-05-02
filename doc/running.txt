@@ -17,6 +17,7 @@
         - Install packages, might take a second 
     - $ npx expo start --clear
         - This should show a QR code along with more options
+        - '-- clear' clears the cache (sometimes not clearing causes problems) 
 
 5) Open camera on phone and scan terminal QR code (Do not close terminal process)
     - If you are testing on the Android expo app you will need to scan the QR code in the app 
