@@ -8,7 +8,7 @@ export async function getNearestLocation(latitude: number, longitude: number, ke
           ): Promise<any> => {
             const radius = 10000; 
             const location = `${lat},${lng}`;
-            const type = "restaurant";
+            const type = "";
             const key = "AIzaSyDZN49QqnniwdsEjKnqu4EntPC7SpVr4cM";
             const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=${keyWord}&location=${location}&radius=${radius}&type=${type}&key=${key}`;
 
