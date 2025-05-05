@@ -19,6 +19,10 @@ export default function HomeScreen() {
     ['Taco Bell', '#af22d6'],
     ['Jersey Mikes', '#4287f5'],
     ['Culvers', '#00aaff'],
+    ['Laird Stadium', "#000000"], 
+    ['Dairy Queen', '#000000'], 
+    ["Carleton College Baseball Field", "#000000"], 
+    ['Gould Library Carleton College', "#000000"]
   ];
 
   const router = useRouter();
@@ -79,27 +83,12 @@ export default function HomeScreen() {
       setLocationLong(locLng);
 
       console.log("Inside get user location distance:");
-      const latRad = locLat * (Math.PI / 180);
-      const lngRad = locLng * (Math.PI / 180);
-      console.log(latRad);
-      console.log(lngRad);
-
-      const latLocRad = lat * (Math.PI / 180);
-      const lngLocRad = long * (Math.PI / 180);
-      console.log(latLocRad);
-      console.log(lngLocRad);
-
-      const dist = 2 * 6371 * Math.asin((Math.sqrt(Math.sin(latLocRad - latRad) ** 2 / 2 + Math.cos(latRad) * Math.cos(latLocRad) * (Math.sin(lngLocRad - lngRad) ** 2) / 2)));
-
-      console.log(dist);
       console.log("Finish");
 
       // Add location to path 
       setPath(p =>
         p.concat({ latitude: locLat, longitude: locLng })
       );
-
-      setDistance(dist);
     }
     getCurrentLocation();
     const interval = setInterval(getCurrentLocation, 5000);
@@ -110,7 +99,7 @@ export default function HomeScreen() {
   useEffect(() => {
     console.log("Distance");
     console.log(distance);
-    if (distance < 1.5) {
+    if (distance < 0.22) {
       setArrived(true);
     }
   }, [distance]);
@@ -137,9 +126,9 @@ export default function HomeScreen() {
         console.error('API fetch failed:', e);
       }
     })();
-  }, [locationLat, locationLong, screenIndex]);
+  }, [screenIndex]);
 
-  //Compute bearing once both coords are set
+  //Compute bearing and distance once both coords are set
   useEffect(() => {
     if (
       locationLat == null ||
@@ -150,6 +139,21 @@ export default function HomeScreen() {
     const b = calcBearing(locationLat, locationLong, lat, long);
     console.log('Computed bearing:', b);
     setBearing(b);
+    const latRad = locationLat * (Math.PI / 180);
+    const lngRad = locationLong * (Math.PI / 180);
+    console.log(latRad);
+    console.log(lngRad);
+
+    const latLocRad = lat * (Math.PI / 180);
+    const lngLocRad = long * (Math.PI / 180);
+    console.log(latLocRad);
+    console.log(lngLocRad);
+
+    const dist = 2 * 6371 * Math.asin((Math.sqrt(Math.sin(latLocRad - latRad) ** 2 / 2 + Math.cos(latRad) * Math.cos(latLocRad) * (Math.sin(lngLocRad - lngRad) ** 2) / 2)));
+    setDistance(dist);
+    console.log("Distance");
+    console.log(dist);
+
   }, [locationLat, locationLong, lat, long]);
 
   //Watch device heading (tilt‑compensated)
