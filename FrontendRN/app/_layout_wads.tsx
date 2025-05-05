@@ -40,7 +40,7 @@ export default function RootLayout() {
   return (
     <SafeAreaView style={styles.container}>
       <GestureHandlerRootView style={styles.container}>
-            <Slot />
+        <Slot />
       </GestureHandlerRootView>
       <View style={styles.adContainer}>
         <InlineAd />
@@ -52,11 +52,11 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'lightblue', // TEMP: To see SafeAreaView bounds
+    backgroundColor: 'white', // TEMP: To see SafeAreaView bounds
   },
   contentContainer: {
     flex: 1, // Allows this view to grow and fill available space ABOVE the ad
-    backgroundColor: 'lightcoral', // TEMP: To see content bounds
+    backgroundColor: 'white', // TEMP: To see content bounds
     overflow: 'hidden', // Prevent content from spilling if layout is wrong
   },
   adContainer: {
