@@ -211,28 +211,55 @@ export default function HomeScreen() {
 
   /* arrow screen */
   return (
+    // <GestureDetector gesture={panGesture}>
+    //   <Pressable
+    //     style={styles.arrowOverlay}
+    //     onPress={() => {
+    //       if (!tracking) {
+    //         setTracking(true);
+    //         swipeEnabledRef.current = false;
+    //         startTimer();
+    //       } else {
+    //         stopTimer();
+    //         setTracking(false);
+    //         swipeEnabledRef.current = true;
+    //       }
+    //     }}>
+    //     {tracking && (
+    //       <Text style={styles.timer}>
+    //         {String(Math.floor(seconds / 60)).padStart(2, '0')}:
+    //         {String(seconds % 60).padStart(2, '0')}
+    //       </Text>
+    //     )}
+    //     <Arrow color={destColor} bearing={arrowAngle} size={80} label={name} />
+    //   </Pressable>
+    // </GestureDetector>
+
     <GestureDetector gesture={panGesture}>
-      <Pressable
-        style={styles.arrowOverlay}
-        onPress={() => {
-          if (!tracking) {
-            setTracking(true);
-            swipeEnabledRef.current = false;
-            startTimer();
-          } else {
-            stopTimer();
-            setTracking(false);
-            swipeEnabledRef.current = true;
-          }
-        }}>
+    <Pressable
+    style={styles.arrowOverlay}
+    onPress={() => {
+        if (!tracking) {
+        setTracking(true);
+        swipeEnabledRef.current = false;
+        startTimer();
+        } else {
+        stopTimer();
+        setTracking(false);
+        swipeEnabledRef.current = true;
+        }
+    }}
+    >
+    <View style={styles.arrowStack}>
         {tracking && (
-          <Text style={styles.timer}>
+        <Text style={styles.timer}>
             {String(Math.floor(seconds / 60)).padStart(2, '0')}:
             {String(seconds % 60).padStart(2, '0')}
-          </Text>
+        </Text>
         )}
         <Arrow color={destColor} bearing={arrowAngle} size={80} label={name} />
-      </Pressable>
+    </View>
+    </Pressable>
     </GestureDetector>
   );
 }
@@ -247,18 +274,37 @@ function Loading({ text }: { text: string }) {
 }
 
 /* styles */
+// const styles = StyleSheet.create({
+//   arrowOverlay: {
+//     // ...StyleSheet.xabsoluteFillObject,
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//   },
+//   timer: {
+//     // position: 'absolute',
+//     top: 20,
+//     textAlign: 'center',
+//     color: '#000000',
+//     fontSize: 18,
+//   },
+//   container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+//   loadText: { fontSize: 16 },
+// });
+
 const styles = StyleSheet.create({
-  arrowOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  timer: {
-    position: 'absolute',
-    top: 20,
-    color: '#000000',
-    fontSize: 18,
-  },
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  loadText: { fontSize: 16 },
-});
+    arrowOverlay: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      flex: 1,
+    },
+    arrowStack: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    timer: {
+      marginBottom: 8, // small space above arrow
+      textAlign: 'center',
+      color: '#000000',
+      fontSize: 18,
+    },
+  });

@@ -1,5 +1,4 @@
 // USED https://github.com/0neDrop/mcdonalds-api/tree/master/src converted to tsx. 
-// Have not tested!!!
 export async function getNearestLocation(latitude: number, longitude: number, keyWord: string) {
     try{
         const fetchNearestLocation = async (
@@ -29,6 +28,8 @@ export async function getNearestLocation(latitude: number, longitude: number, ke
             console.log("No location found");
             return
         }
+        console.log("Location: \n")
+        console.log(response.geometry.location);
         return response.geometry.location;
 
     } catch {
@@ -62,7 +63,13 @@ export async function getDistance(lat: number, lng: number, latLocation: number,
     const latLocRad = latLocation * (Math.PI / 180); 
     const lngLocRad = lngLocation * (Math.PI / 180);
 
-    const dist = 2 * 6371 * Math.asin((Math.sqrt(Math.sin(latLocRad - latRad)**2)/2
-            + Math.cos(latRad) * Math.cos(latLocRad) * (Math.sin(lngLocRad - lngRad)**2)/2));
+    const a =
+        Math.sin((latLocRad - latRad) / 2) ** 2 +
+        Math.cos(latRad) *
+            Math.cos(latLocRad) *
+            Math.sin((lngLocRad - lngRad) / 2) ** 2;
+
+    const dist = 2 * 6371 * Math.asin(Math.sqrt(a));
+
     return dist;
 };
