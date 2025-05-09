@@ -1,259 +1,264 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, Platform, Button } from 'react-native';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { View, Text, StyleSheet, Platform, Pressable } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { useRouter } from 'expo-router';
-import Arrow3D from '@/components/arrow';
-import Arrow from '@/components/arrow2d';
+import { useRouter, useFocusEffect } from 'expo-router';
 import * as Location from 'expo-location';
 import * as Device from 'expo-device';
+import Arrow from '@/components/arrow2d';
 import calcBearing, { getNearestLocation } from '@/lib/locationUtil';
-import { runOnJS } from 'react-native-reanimated';
 import MapView, { Marker, Polyline } from 'react-native-maps';
+import { runOnJS } from 'react-native-reanimated';
+import { useMemo } from 'react';
 
+
+/* constants */
+
+const LOCATIONS = [
+  ['McDonalds', '#ed2828'],
+  ['Taco Bell', '#af22d6'],
+  ['Jersey Mikes', '#4287f5'],
+  ['Culvers', '#00aaff'],
+  ['Laird Stadium', '#000000'],
+  ['Dairy Queen', '#000000'],
+  ['Carleton College Baseball Field', '#000000'],
+  ['Gould Library Carleton College', '#000000'],
+] as const;
+
+/* component */
 
 export default function HomeScreen() {
-  // locations 
-  const [screenIndex, setScreenIndex] = useState<number>(0);
-  const Locations = [
-    ['McDonalds', '#ed2828'],
-    ['Taco Bell', '#af22d6'],
-    ['Jersey Mikes', '#4287f5'],
-    ['Culvers', '#00aaff'],
-    ['Laird Stadium', "#000000"], 
-    ['Dairy Queen', '#000000'], 
-    ["Carleton College Baseball Field", "#000000"], 
-    ['Gould Library Carleton College', "#000000"]
-  ];
-
   const router = useRouter();
 
-  const onSwipeLeft = useCallback(() => {
-    setScreenIndex(i => Math.min(i + 1, Locations.length - 1));
-  }, []);
-  const onSwipeRight = useCallback(() => {
-    setScreenIndex(i => Math.max(i - 1, 0));
-  }, []);
+  /* paging  */
+  const [screenIndex, setScreenIndex] = useState(0);
+  const swipeEnabledRef = useRef(true); 
 
-  const panGesture = Gesture.Pan().onEnd(event => {
-    'worklet';
-    const { translationX } = event;
-    if (Math.abs(translationX) < 50) return;
+  const goLeft  = useCallback(() => setScreenIndex(i => Math.max(i - 1, 0)), []);
+  const goRight = useCallback(() => setScreenIndex(i => Math.min(i + 1, LOCATIONS.length - 1)), []);
 
-    if (translationX < -50) {
-      runOnJS(onSwipeLeft)();
-    } else if (translationX > 50) {
-      runOnJS(onSwipeRight)();
+  
+  /* tracking + timer  */
+  const [tracking,   setTracking]   = useState(false);
+  const [seconds,    setSeconds]    = useState(0);
+  const timerId = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [arrived,    setArrived]    = useState(false);
+  const [path,       setPath]       = useState<{ latitude: number; longitude: number }[]>([]);
+  
+  /* user + destination coords  */
+  const [userLat,  setUserLat]  = useState<number | null>(null);
+  const [userLng,  setUserLng]  = useState<number | null>(null);
+  const [destLat,  setDestLat]  = useState<number>();
+  const [destLng,  setDestLng]  = useState<number>();
+  const [bearing,  setBearing]  = useState<number>();
+  const [heading,  setHeading]  = useState(0);
+  const [distance, setDistance] = useState(999);
+  
+  const panGesture = useMemo(
+      () =>
+        Gesture.Pan().onEnd(({ translationX }) => {
+          'worklet';
+          if (tracking || Math.abs(translationX) < 50) return;
+    
+          if (translationX < -50) {
+            runOnJS(goRight)();
+          } else if (translationX > 50) {
+            runOnJS(goLeft)();
+          }
+        }),
+      [tracking],           
+  );
+  /*  helpers  */
+
+  const startTimer = () => {
+    timerId.current = setInterval(() => setSeconds(s => s + 1), 1000);
+  };
+
+  const stopTimer = () => {
+    if (timerId.current) {
+        clearInterval(timerId.current);
+        timerId.current = null;         
     }
-  });
+  };
 
-  //State for all our coords/headings 
-  const [locationLat, setLocationLat] = useState<number | null>(null);
-  const [locationLong, setLocationLong] = useState<number | null>(null);
-  const [lat, setLat] = useState<number>(0);
-  const [long, setLong] = useState<number>(0);
-  const [bearing, setBearing] = useState<number | null>(null);
-  const [heading, setHeading] = useState<number>(0);
-  const [distance, setDistance] = useState<number>(100);
-  const [arrived, setArrived] = useState(false);
+  const resetState = () => {
+    stopTimer();
+    setTracking(false);
+    swipeEnabledRef.current = true;
+    setSeconds(0);
+    setArrived(false);
+    setPath([]);
+  };
 
-  //Path tracking
-  type cords = {
-    lat: number,
-    lng: number,
-  }
-  const [path, setPath] = useState<{ latitude: number; longitude: number }[]>([]);
+  /* GPS poll every 5 s */
 
-  //Poll user GPS every 5s
   useEffect(() => {
-    async function getCurrentLocation() {
-      console.log('In Get location');
-      if (Platform.OS === 'android' && !Device.isDevice) {
-        console.warn('Android emulator—GPS may be unreliable');
-      }
+    const poll = async () => {
+      if (Platform.OS === 'android' && !Device.isDevice) return;
       const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        console.warn('Location permission denied');
-        return;
-      }
+      if (status !== 'granted') return;
+
       const loc = await Location.getCurrentPositionAsync({});
-      console.log('Got user coords:', loc.coords);
-      const locLat = loc.coords.latitude;
-      const locLng = loc.coords.longitude;
-      setLocationLat(locLat);
-      setLocationLong(locLng);
+      const { latitude, longitude } = loc.coords;
+      setUserLat(latitude);
+      setUserLng(longitude);
 
-      console.log("Inside get user location distance:");
-      console.log("Finish");
+      /* save to path only while tracking */
+      setPath(p => (tracking ? p.concat({ latitude, longitude }) : p));
+    };
 
-      // Add location to path 
-      setPath(p =>
-        p.concat({ latitude: locLat, longitude: locLng })
-      );
-    }
-    getCurrentLocation();
-    const interval = setInterval(getCurrentLocation, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    poll();
+    const id = setInterval(poll, 5000);
+    return () => clearInterval(id);
+  }, [tracking]);
 
-  //Set next screen if dist close
+  /* destination lookup when page changes */
+
   useEffect(() => {
-    console.log("Distance");
-    console.log(distance);
-    if (distance < 0.22) {
-      setArrived(true);
-    }
-  }, [distance]);
-
-  //Fetch nearest store when user loc/page changes
-  useEffect(() => {
-    if (locationLat == null || locationLong == null) return;
+    if (!userLat || !userLng) return;
     (async () => {
-      try {
-        const [name] = Locations[screenIndex];
-        const res = await getNearestLocation(
-          locationLat,
-          locationLong,
-          name
-        );
-        if (res) {
-          console.log(`Found nearest ${name} at`, res);
-          setLat(res.lat);
-          setLong(res.lng);
-        } else {
-          console.warn(`No ${name} found nearby`);
-        }
-      } catch (e) {
-        console.error('API fetch failed:', e);
-      }
+      const [name] = LOCATIONS[screenIndex];
+      const res = await getNearestLocation(userLat, userLng, name);
+      if (!res) return;
+      setDestLat(res.lat);
+      setDestLng(res.lng);
     })();
-  }, [screenIndex]);
+  }, [screenIndex, userLat, userLng]);
 
-  //Compute bearing and distance once both coords are set
+  /* bearing + distance */
+
   useEffect(() => {
-    if (
-      locationLat == null ||
-      locationLong == null ||
-      lat == null ||
-      long == null
-    ) return;
-    const b = calcBearing(locationLat, locationLong, lat, long);
-    console.log('Computed bearing:', b);
-    setBearing(b);
-    const latRad = locationLat * (Math.PI / 180);
-    const lngRad = locationLong * (Math.PI / 180);
-    console.log(latRad);
-    console.log(lngRad);
+    if (userLat == null || userLng == null || destLat == null || destLng == null)
+      return;
 
-    const latLocRad = lat * (Math.PI / 180);
-    const lngLocRad = long * (Math.PI / 180);
-    console.log(latLocRad);
-    console.log(lngLocRad);
+    setBearing(calcBearing(userLat, userLng, destLat, destLng));
 
-    const dist = 2 * 6371 * Math.asin((Math.sqrt(Math.sin(latLocRad - latRad) ** 2 / 2 + Math.cos(latRad) * Math.cos(latLocRad) * (Math.sin(lngLocRad - lngRad) ** 2) / 2)));
-    setDistance(dist);
-    console.log("Distance");
-    console.log(dist);
+    const toRad = (d: number) => (d * Math.PI) / 180;
+    const d =
+      2 *
+      6371 *
+      Math.asin(
+        Math.sqrt(
+          Math.sin((toRad(destLat) - toRad(userLat)) / 2) ** 2 +
+            Math.cos(toRad(userLat)) *
+              Math.cos(toRad(destLat)) *
+              Math.sin((toRad(destLng) - toRad(userLng)) / 2) ** 2,
+        ),
+      );
 
-  }, [locationLat, locationLong, lat, long]);
+    setDistance(d);
+  }, [userLat, userLng, destLat, destLng]);
 
-  //Watch device heading (tilt‑compensated)
+  /* arrival trigger */
+
+  useEffect(() => {
+    if (!tracking) return;
+    if (distance < 0.22) setArrived(true);
+  }, [distance, tracking]);
+
+  /* heading sensor */
+
   useEffect(() => {
     let sub: Location.LocationSubscription;
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') return;
-      sub = await Location.watchHeadingAsync(h => {
-        setHeading(h.trueHeading ?? h.magHeading);
-      });
+      sub = await Location.watchHeadingAsync(h =>
+        setHeading(h.trueHeading ?? h.magHeading),
+      );
     })();
-    return () => sub && sub.remove();
+    return () => sub?.remove();
   }, []);
 
-  if (locationLat == null || locationLong == null) {
-    return <Loading text="Fetching GPS…" />;
-  }
-  if (lat == null || long == null) {
-    const name = Locations[screenIndex][0];
-    return <Loading text={`Finding nearest ${name}…`} />;
-  }
-  if (bearing == null) {
-    return <Loading text="Calculating bearing…" />;
-  }
+  /* navigate to map on arrival */
+
+  useEffect(() => {
+    if (!arrived) return;
+    stopTimer();
+    swipeEnabledRef.current = true;
+
+    router.push({
+      pathname: '/map',
+      params: {
+        path: JSON.stringify(path),
+        color: LOCATIONS[screenIndex][1],
+        name: LOCATIONS[screenIndex][0],
+      },
+    });
+  }, [arrived]);
+
+  /* reset when user comes back */
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => resetState(); 
+    }, []),
+  );
+
+  /* render  */
+
+  if (
+    userLat == null ||
+    userLng == null ||
+    destLat == null ||
+    destLng == null ||
+    bearing == null
+  )
+    return <Loading text="Bootstrapping…" />;
 
   const arrowAngle = ((bearing - heading) + 360) % 360;
-  const [, color] = Locations[screenIndex];
-  const name = Locations[screenIndex][0];
+  const [, destColor] = LOCATIONS[screenIndex];
+  const name = LOCATIONS[screenIndex][0];
 
-  if (!arrived) {
-    return (
-        <GestureDetector gesture={panGesture}>
-            <View style={styles.arrowOverlay}>
-            <Arrow
-                color={Locations[screenIndex][1]}
-                bearing={arrowAngle}
-                size={80}
-                label={name}
-            />
-            </View>
-        </GestureDetector>
-    );
-  }
-
+  /* arrow screen */
   return (
-    <View style={styles.container}>
-      <MapView
-        style={StyleSheet.absoluteFill}
-        showsUserLocation
-        initialRegion={{
-          latitude: path[path.length - 1].latitude,
-          longitude: path[path.length - 1].longitude,
-          latitudeDelta: 0.005,
-          longitudeDelta: 0.005,
-        }}
-        region={{
-          latitude: path[path.length - 1].latitude,
-          longitude: path[path.length - 1].longitude,
-          latitudeDelta: 0.005,
-          longitudeDelta: 0.005,
-        }}
-      >
-        <Polyline
-          coordinates={path}
-          strokeWidth={4}
-          strokeColor={color}
-        />
-        <Marker
-          coordinate={{ latitude: locationLat, longitude: locationLong }}
-          title={name}
-        />
-      </MapView>
-    </View>
+    <GestureDetector gesture={panGesture}>
+      <Pressable
+        style={styles.arrowOverlay}
+        onPress={() => {
+          if (!tracking) {
+            setTracking(true);
+            swipeEnabledRef.current = false;
+            startTimer();
+          } else {
+            stopTimer();
+            setTracking(false);
+            swipeEnabledRef.current = true;
+          }
+        }}>
+        {tracking && (
+          <Text style={styles.timer}>
+            {String(Math.floor(seconds / 60)).padStart(2, '0')}:
+            {String(seconds % 60).padStart(2, '0')}
+          </Text>
+        )}
+        <Arrow color={destColor} bearing={arrowAngle} size={80} label={name} />
+      </Pressable>
+    </GestureDetector>
   );
 }
 
+/* map page loading placeholder */
 function Loading({ text }: { text: string }) {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>{text}</Text>
+      <Text style={styles.loadText}>{text}</Text>
     </View>
   );
 }
 
+/* ---------- styles ---------- */
 const styles = StyleSheet.create({
-    arrowOverlay: {
-      ...StyleSheet.absoluteFillObject,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    container: {
-        flex: 1,
-        backgroundColor: 'white',
-        justifyContent: 'center',
-        alignItems: 'stretch',
-    },
-    text: {
-        color: '#fff',
-        fontSize: 18,
-        textAlign: 'center',
-    },
+  arrowOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  timer: {
+    position: 'absolute',
+    top: 20,
+    color: '#a0a0a0',
+    fontSize: 18,
+  },
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  loadText: { fontSize: 16 },
 });
