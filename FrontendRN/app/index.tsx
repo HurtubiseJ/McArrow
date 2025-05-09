@@ -246,7 +246,7 @@ function Loading({ text }: { text: string }) {
   );
 }
 
-/* ---------- styles ---------- */
+/* styles */
 const styles = StyleSheet.create({
   arrowOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   timer: {
     position: 'absolute',
     top: 20,
-    color: '#a0a0a0',
+    color: '#000000',
     fontSize: 18,
   },
   container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
