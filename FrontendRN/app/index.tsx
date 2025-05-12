@@ -194,6 +194,8 @@ export default function HomeScreen() {
         path: JSON.stringify(path),
         color: LOCATIONS[screenIndex][1],
         name: LOCATIONS[screenIndex][0],
+        startLocation: JSON.stringify(path[0]),
+        endLocation: JSON.stringify([destLat, destLng])
       },
     });
   }, [arrived]);
