@@ -155,6 +155,18 @@ export default function HomeScreen() {
     if (distance < 0.22) setArrived(true);
   }, [distance, tracking]);
 
+  /* stop button while tracking */
+  useEffect(() => {
+    if (!tracking) return;
+    const onPress = () => {
+      stopTimer();
+      setTracking(false);
+      setArrived(false);
+      setPath([]);
+      swipeEnabledRef.current = true;
+    };
+  }, [tracking]);
+
   /* heading sensor */
 
   useEffect(() => {
@@ -243,22 +255,51 @@ export default function HomeScreen() {
         setTracking(true);
         swipeEnabledRef.current = false;
         startTimer();
-        } else {
-        stopTimer();
-        setTracking(false);
-        swipeEnabledRef.current = true;
-        }
+        } 
+        // OLD CODE USED TO STOP TRACKING ON PRESS 
+        // else {
+        // stopTimer();
+        // setTracking(false);
+        // swipeEnabledRef.current = true;
+        // }
     }}
     >
     <View style={styles.arrowStack}>
-        {tracking && (
+        <Arrow color={destColor} bearing={arrowAngle} size={80} label={name} />
+        {/* {tracking && (
+        <Text style={styles.timer}>
+            {String(Math.floor(seconds / 60)).padStart(2, '0')}:
+            {String(seconds % 60).padStart(2, '0')}
+        </Text>
+        )} */}
+    </View>
+
+    <View style={styles.timer}>
+      {tracking && (
         <Text style={styles.timer}>
             {String(Math.floor(seconds / 60)).padStart(2, '0')}:
             {String(seconds % 60).padStart(2, '0')}
         </Text>
         )}
-        <Arrow color={destColor} bearing={arrowAngle} size={80} label={name} />
     </View>
+
+    {/* Add Stop Button */}
+    {tracking && (
+        <Pressable
+          style={styles.stopButton}
+          onPress={() => {
+            stopTimer();
+            setTracking(false);
+            setArrived(false);
+            setPath([]);
+            swipeEnabledRef.current = true;
+            resetState();
+          }}
+        >
+          <Text style={styles.stopButtonText}>STOP</Text>
+        </Pressable>
+      )}
+
     </Pressable>
     </GestureDetector>
   );
@@ -302,9 +343,29 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
     },
     timer: {
-      marginBottom: 8, // small space above arrow
-      textAlign: 'center',
+      position: 'absolute',
+      top: 40,
+      right: 20,
       color: '#000000',
       fontSize: 18,
+    },
+    stopButton: {
+      position: 'absolute',
+      top: 40,
+      right: 30,
+      backgroundColor: '#ff3b30',
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+      borderRadius: 20,
+      elevation: 3,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.3,
+      shadowRadius: 2,
+    },
+    stopButtonText: {
+      color: 'white',
+      fontWeight: 'bold',
+      fontSize: 14,
     },
   });
