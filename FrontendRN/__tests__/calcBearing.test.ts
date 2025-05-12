@@ -10,7 +10,7 @@ it('Checks the angle between two known points', async () => {
 
     const location = await getNearestLocation(startLocationLatitude, startLocationLongitude, keyWord);
 
-    // get bearing
+    // Get bearing
     const bearing = calcBearing(
         startLocationLatitude,
         startLocationLongitude,
