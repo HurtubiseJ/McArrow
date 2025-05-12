@@ -1,94 +1,119 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Text } from 'react-native';
 import MapView, { Polyline, Marker } from 'react-native-maps';
 import { useLocalSearchParams, Stack } from 'expo-router';
-import { useEffect } from 'react';
+import { getDistance } from '@/lib/locationUtil';
+
+type Coord = { latitude: number; longitude: number };
 
 export default function MapScreen() {
-  const { path: raw, color, name, startLocation, endLocation } = useLocalSearchParams<{
-    path: string;
-    color: string;
-    name: string;
-    startLocation: string;
-    endLocation: string; 
-  }>();
+  const { path: rawPath, color, name, startLocation, endLocation, seconds } =
+    useLocalSearchParams<{
+      path: string;
+      color: string;
+      name: string;
+      startLocation: string;
+      endLocation: string;
+      seconds: string;
+    }>();
 
-  type Coord = {latitude: number; longitude: number}
+  const userPath: Coord[] = JSON.parse(rawPath);
+  const startLoc:   Coord = JSON.parse(startLocation);
+  const destination:Coord = JSON.parse(endLocation);
+  const lineColor = color.startsWith('#') ? color : `#${color}`;
 
-  const coords = JSON.parse(raw) as { latitude: number; longitude: number }[];
-  const destination = JSON.parse(endLocation) as { latitude: number; longitude: number };
-  const startLoc = JSON.parse(startLocation) as { latitude: number; longitude: number};
+  function calcResid(start: Coord, end: Coord, pt: Coord): number {
+    const x1 = start.longitude, y1 = start.latitude;
+    const x2 = end.longitude,   y2 = end.latitude;
 
-  // Takes in start and end location and calculates line formula
-  // From line formula calculates R^2 dist from line to point
-  function calcResid(
-    start: Coord,
-    end:   Coord,
-    pt:    Coord
-  ): number {
-    const x1 = start.longitude;
-    const y1 = start.latitude;
-    const x2 = end.longitude;
-    const y2 = end.latitude;
-  
-    const A =  y2 - y1;       // Δy
-    const B =  x1 - x2;       // –Δx
-    const C =  x2*y1 - y2*x1; // x2*y1 − y2*x1
-  
-    // perpendicular distance = |A x0 + B y0 + C| / sqrt(A² + B²)
+    const A =  y2 - y1;
+    const B =  x1 - x2;
+    const C =  x2*y1 - y2*x1;
+
     const num   = Math.abs(A * pt.longitude + B * pt.latitude + C);
-    const denom = Math.sqrt(A*A + B*B);
+    const denom = Math.hypot(A, B);
     const dist  = num / denom;
-  
-    return dist * dist; 
+    return dist * dist;
   }
 
-  function calcSumDistances(startLoc: Coord, destination: Coord, coords: Coord[]) {
-    const start: Coord = startLoc;
-    const end: Coord = destination;
-    var sum = 0
-    coords.forEach(element => {
-        const res = calcResid(start, end, element);
-        sum = sum + res
-    });
-    
-    return sum;
+  function calcSumDistances(path: Coord[]): number {
+    return path.reduce((sum, pt) => sum + calcResid(startLoc, destination, pt), 0);
   }
 
-  // Calc resid for path. Display score.
+  // 4) compute metrics once page loads
+  const [distance,  setDistance]  = useState(0);
+  const [residuals, setResiduals] = useState(0);
+
   useEffect(() => {
-    const residuals = calcSumDistances(startLoc, destination, coords);
-    console.log(residuals);
+    async function computeMetrics() {
+      const d = await getDistance(
+        startLoc.latitude,
+        startLoc.longitude,
+        destination.latitude,
+        destination.longitude
+      );
+      setDistance(d);
+
+      setResiduals(calcSumDistances(userPath));
+    }
+
+    computeMetrics();
   }, []);
 
-  if (!coords.length) return null;
+  if (!userPath.length) return null;
 
-  const last = coords[coords.length - 1];
+  const initialRegion = {
+    latitude:  startLoc.latitude,
+    longitude: startLoc.longitude,
+    latitudeDelta:  0.02,
+    longitudeDelta: 0.02,
+  };
 
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
+
       <View style={styles.mapSection}>
-        <MapView
-          style={StyleSheet.absoluteFill}
-          showsUserLocation
-          initialRegion={{
-            latitude: last.latitude,
-            longitude: last.longitude,
-            latitudeDelta: 0.005,
-            longitudeDelta: 0.005,
-          }}>
-          <Polyline coordinates={coords} strokeWidth={4} strokeColor={String(color)} />
-          <Marker coordinate={last} title={String(name)} />
+        <MapView style={StyleSheet.absoluteFill} initialRegion={initialRegion}>
+          {/* optimal straight path (dotted gray) */}
+          <Polyline
+            coordinates={[startLoc, destination]}
+            strokeColor="gray"
+            strokeWidth={2}
+            lineDashPattern={[6, 4]}
+          />
+
+          {/* user’s actual path (solid) */}
+          <Polyline
+            coordinates={userPath}
+            strokeColor={lineColor}
+            strokeWidth={4}
+          />
+
+          {/* start / end markers */}
+          <Marker coordinate={startLoc}   title="Start" pinColor="green" />
+          <Marker coordinate={destination} title={name}  pinColor="red"   />
         </MapView>
       </View>
 
-      <View style={styles.summarySection} />
+      <View style={styles.summarySection}>
+        <Text style={styles.summaryText}>Location: {name}</Text>
+        <Text style={styles.summaryText}>
+          Distance (straight): {distance.toLocaleString()} m
+        </Text>
+        <Text style={styles.summaryText}>
+          Path residuals (∑ d²): {residuals.toFixed(2)}
+        </Text>
+        <Text style={styles.summaryText}>
+          Time to complete: {seconds ?? '–'} s
+        </Text>
+      </View>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  mapSection: { flex: 0.6 },
-  summarySection: { flex: 0.4, backgroundColor: '#fff' },
+  mapSection:     { flex: 0.6 },
+  summarySection: { flex: 0.4, backgroundColor: '#fff', padding: 16 },
+  summaryText:    { fontSize: 16, marginBottom: 8 },
 });

@@ -22,6 +22,7 @@ const LOCATIONS = [
   ['Dairy Queen', '#000000'],
   ['Carleton College Baseball Field', '#000000'],
   ['Gould Library Carleton College', '#000000'],
+  ["Evans hall carleton", '#000000'],
 ] as const;
 
 /* component */
@@ -152,7 +153,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     if (!tracking) return;
-    if (distance < 0.22) setArrived(true);
+    if (distance < 0.08) setArrived(true);
   }, [distance, tracking]);
 
   /* stop button while tracking */
@@ -184,10 +185,11 @@ export default function HomeScreen() {
   /* navigate to map on arrival */
 
   useEffect(() => {
-    if (!arrived) return;
+    if (!arrived || destLat == null || destLng == null || path.length === 0) return;
+  
     stopTimer();
     swipeEnabledRef.current = true;
-
+  
     router.push({
       pathname: '/map',
       params: {
@@ -195,10 +197,12 @@ export default function HomeScreen() {
         color: LOCATIONS[screenIndex][1],
         name: LOCATIONS[screenIndex][0],
         startLocation: JSON.stringify(path[0]),
-        endLocation: JSON.stringify([destLat, destLng])
+        endLocation: JSON.stringify({ latitude: destLat, longitude: destLng }),
+        seconds: JSON.stringify(seconds),
       },
     });
-  }, [arrived]);
+  }, [arrived, destLat, destLng, path]);
+  
 
   /* reset when user comes back */
 

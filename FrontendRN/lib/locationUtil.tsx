@@ -28,8 +28,6 @@ export async function getNearestLocation(latitude: number, longitude: number, ke
             console.log("No location found");
             return
         }
-        console.log("Location: \n")
-        console.log(response.geometry.location);
         return response.geometry.location;
 
     } catch {
