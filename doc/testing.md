@@ -23,10 +23,10 @@
     - Making sure our arrow is actually pointing to the closest restaurant. 
 
 
-## Testing Assignment 
+## Testing Assignment 5/13
 
 ### Tools 
-We are using the Jest library for testing.
+We are using the Jest library and some built in react native tools for testing.
 
 ### Testing Code 
 All of our testing code is in FrontendRN/__tests__/ directory 
@@ -46,3 +46,8 @@ All of our testing code is in FrontendRN/__tests__/ directory
 4) Tap the stop button, then repeat step three and make sure the timer has reset to 0:00
 5) Pull up google maps on a seperate device and make sure the arrow is pointing in generally the right direction
 6) Repeat for all locations
+
+### Additional Testing
+1) Some sort of automated swiping through the pages of our app
+2) Some sort of simulated path that we can test the map with 
+
