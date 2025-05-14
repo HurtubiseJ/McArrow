@@ -5,12 +5,10 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { getDistance } from '@/lib/locationUtil';
 
 export default function MapScreen() {
-  // (we ignore the incoming params for now, since we're using dummy data)
   const { seconds } = useLocalSearchParams<{ seconds: string }>();
 
   type Coord = { latitude: number; longitude: number };
 
-  // ── Dummy test data ─────────────────────────────────────────────────────
   const startLoc: Coord = { latitude: 37.7749, longitude: -122.4194 }; // SF
   const destination: Coord = { latitude: 37.8049, longitude: -122.2711 }; // Oakland
   const userPath: Coord[] = [
@@ -22,15 +20,14 @@ export default function MapScreen() {
     { latitude: 37.7930, longitude: -122.3350 },
     { latitude: 37.7960, longitude: -122.3200 },
   ];
-  const lineColor = "#4287f5";  // or pull from params
+  const lineColor = "#4287f5";  
 
-  // ── helper (squared perpendicular residual) ─────────────────────────────
   function calcResid(start: Coord, end: Coord, pt: Coord): number {
     const x1 = start.longitude, y1 = start.latitude;
     const x2 = end.longitude,   y2 = end.latitude;
 
-    const A =  y2 - y1;    // Δy
-    const B =  x1 - x2;    // –Δx
+    const A =  y2 - y1;    
+    const B =  x1 - x2;    
     const C =  x2*y1 - y2*x1;
 
     const num   = Math.abs(A * pt.longitude + B * pt.latitude + C);
@@ -47,23 +44,19 @@ export default function MapScreen() {
     return path.reduce((sum, pt) => sum + calcResid(start, end, pt), 0);
   }
 
-  // ── state to hold our computed metrics ─────────────────────────────────
   const [distance,   setDistance]   = useState(0);
   const [residuals,  setResiduals]  = useState(0);
 
   useEffect(() => {
-    // compute straight‐line distance (in meters)
     const d = getDistance(
       startLoc.latitude,  startLoc.longitude,
       destination.latitude, destination.longitude
     );
     setDistance(d);
 
-    // compute sum of squared residuals
     setResiduals(calcSumDistances(startLoc, destination, userPath));
   }, []);
 
-  // ── center map on the first point of the user path ───────────────────────
   const initialPoint = userPath[0] || startLoc;
 
   return (

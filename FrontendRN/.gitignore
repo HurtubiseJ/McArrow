@@ -2,7 +2,7 @@
 
 # dependencies
 node_modules/
-
+node_modules/@0no-co/graphql.web/dist/graphql.web.d.ts
 # Expo
 .expo/
 dist/

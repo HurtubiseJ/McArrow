@@ -40,7 +40,6 @@ export default function MapScreen() {
     return path.reduce((sum, pt) => sum + calcResid(startLoc, destination, pt), 0);
   }
 
-  // 4) compute metrics once page loads
   const [distance,  setDistance]  = useState(0);
   const [residuals, setResiduals] = useState(0);
 
@@ -102,7 +101,7 @@ export default function MapScreen() {
           Distance (straight): {distance.toLocaleString()} m
         </Text>
         <Text style={styles.summaryText}>
-          Path residuals (∑ d²): {residuals.toFixed(2)}
+          Path residuals: {residuals.toFixed(2)}
         </Text>
         <Text style={styles.summaryText}>
           Time to complete: {seconds ?? '–'} s
