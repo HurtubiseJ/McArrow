@@ -1,8 +1,8 @@
 === DESCRIPTION and STATUS ===
 Our app is McArrow. The primary functionality is an arrow which points towards 
 a nearby store (default is mcdonalds). You are able to swipe left and right to 
-the active store. To start a path you must click the arrow which starts a timer
-in the top left. The goal is then to follow the straitest path to the selected 
+change the active store. To start a path you must click the arrow which starts a timer
+in the top right. The goal is then to follow the straitest path to the selected 
 location. On arrival, the app opens a map view to show your path along with a
 path score. The score is a mixture of how well you stayed on course, distance 
 traveled, and time to complete. The goal is to get the highest score!
@@ -10,8 +10,9 @@ traveled, and time to complete. The goal is to get the highest score!
 Additionally, you can add custom locations. Swipe down on any arrow view to 
 open the add location screen. Note: you cannot be in an activate path, meaning
 there should be no timer in the top right. From this screen you can add a custom 
-location with a color of your choosing. When the app is downloaded custom locations
-will persist between sessions but using the simulator or expo go does not save locations.
+location with a color of your choosing (see 'OTHER' section below for recommended addition).
+When the app is downloaded custom locations will persist between sessions but 
+using the simulator or expo go does not save locations.
 
 All of the above features work in part from the scoreing algorithm. Currently it
 only displays residuals (How far you went off the optimal path), time to complete, 
@@ -22,7 +23,7 @@ scores. This is currently not implimented.
 
 === HOW TO RUN ===
 I belive the easiest strategy is to use expo go. This also allows the use of the phones
-gyroscopic features allowing full app functionality. If not possible you can still run
+gyroscopic features allowing full app functionality. If not possible, you can still run
 the app in XCode's iOS simulator with reduced functionality
 
 SEE running.txt FOR STEP BY STEP INSTRUCTIONS. 
