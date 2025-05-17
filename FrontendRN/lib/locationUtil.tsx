@@ -8,7 +8,11 @@ export async function getNearestLocation(latitude: number, longitude: number, ke
             const radius = 10000; 
             const location = `${lat},${lng}`;
             const type = "";
-            const key = "AIzaSyDZN49QqnniwdsEjKnqu4EntPC7SpVr4cM"; // TODO: Make this env
+            const key = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY; // Use the environment variable
+            if (!key) {
+              console.error("Google Maps API key is not set. Please check your .env file.");
+              return null;
+            }
             const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=${keyWord}&location=${location}&radius=${radius}&type=${type}&key=${key}`;
 
             const response = await fetch(url);
