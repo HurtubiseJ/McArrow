@@ -1,4 +1,4 @@
-// USED https://github.com/0neDrop/mcdonalds-api/tree/master/src converted to tsx. 
+// Returns locaton object of nearest store (input through keyWord) to input location
 export async function getNearestLocation(latitude: number, longitude: number, keyWord: string) {
     try{
         const fetchNearestLocation = async (
@@ -8,10 +8,8 @@ export async function getNearestLocation(latitude: number, longitude: number, ke
             const radius = 10000; 
             const location = `${lat},${lng}`;
             const type = "";
-            const key = "AIzaSyDZN49QqnniwdsEjKnqu4EntPC7SpVr4cM";
+            const key = "AIzaSyDZN49QqnniwdsEjKnqu4EntPC7SpVr4cM"; // TODO: Make this env
             const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=${keyWord}&location=${location}&radius=${radius}&type=${type}&key=${key}`;
-
-            console.log(url);
 
             const response = await fetch(url);
 
@@ -20,9 +18,10 @@ export async function getNearestLocation(latitude: number, longitude: number, ke
             }
 
             const data = await response.json();
-            console.log(data);
+            console.log(data)
             return data.results?.[0] || null;
         };
+
         const response = await fetchNearestLocation(latitude, longitude);
         if (response == null) {
             console.log("No location found");
@@ -35,39 +34,31 @@ export async function getNearestLocation(latitude: number, longitude: number, ke
         return
     }
 }
+const toRad  = (d:number) => (d * Math.PI) / 180;
 
-export default function calcBearing(lat: number, lng: number, latLocation: number, lngLocation: number) {
+export function calcBearing(lat: number, lng: number, latLocation: number, lngLocation: number) {
     // Calculates heading from use location (lat, lng) to store (latLocation, lngLocation)
-    const toRad = (deg: number) => deg * (Math.PI / 180);
+    const lat1 = toRad(lat)
+    const lat2 = toRad(latLocation)
+    const dLon = toRad(lngLocation - lng)
 
-    const lat1 = toRad(lat);
-    const lng1 = toRad(lng);
-    const lat2 = toRad(latLocation);
-    const lng2 = toRad(lngLocation);
+    const y = Math.sin(dLon) * Math.cos(lat2)
+    const x = Math.cos(lat1) * Math.sin(lat2) -
+              Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
 
-    const x = Math.cos(lat2) * Math.sin(lng2 - lng1);
-    const y = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lng2 - lng1);
+    const bearingRad = Math.atan2(y, x);
+    const bearingDeg = (bearingRad * 180 / Math.PI + 360) % 360;
 
-    const b = Math.atan2(x, y) * (180 / Math.PI); // Bearing in degrees
-
-    const bearing = (b + 360) % 360; // Normalize to 0–360°
-    return bearing;
+    return bearingDeg;
 }
 
-export async function getDistance(lat: number, lng: number, latLocation: number, lngLocation: number){
-    const latRad = lat * (Math.PI / 180);
-    const lngRad = lng * (Math.PI / 180);
 
-    const latLocRad = latLocation * (Math.PI / 180); 
-    const lngLocRad = lngLocation * (Math.PI / 180);
-
-    const a =
-        Math.sin((latLocRad - latRad) / 2) ** 2 +
-        Math.cos(latRad) *
-            Math.cos(latLocRad) *
-            Math.sin((lngLocRad - lngRad) / 2) ** 2;
-
-    const dist = 2 * 6371 * Math.asin(Math.sqrt(a));
-
-    return dist;
+// Distance calculation
+export function haversineDistance (aLat:number, aLng:number, bLat:number, bLng:number): number{
+    const distance = 2 * 6371 * Math.asin(Math.sqrt(
+        Math.sin((toRad(bLat) - toRad(aLat)) / 2)**2 +
+        Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) *
+        Math.sin((toRad(bLng) - toRad(aLng)) / 2)**2
+    ))
+    return distance
 };

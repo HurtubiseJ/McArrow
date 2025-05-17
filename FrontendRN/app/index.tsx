@@ -3,10 +3,8 @@ import { View, Text, StyleSheet, Platform, Pressable, Alert } from 'react-native
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import { useRouter, useFocusEffect } from 'expo-router'
 import * as Location from 'expo-location'
-import * as Device from 'expo-device'
 import Arrow from '@/components/arrow2d'
-import calcBearing, { getNearestLocation } from '@/lib/locationUtil'
-import AsyncStorage from '@react-native-async-storage/async-storage'
+import { calcBearing, getNearestLocation, haversineDistance } from '@/lib/locationUtil'
 import { runOnJS } from 'react-native-reanimated';
 import { LocationsCtx } from './_layout'
 
@@ -35,25 +33,29 @@ export default function HomeScreen() {
   const [heading,  setHeading]  = useState(0)
   const [distance, setDistance] = useState<number|null>(null)
 
-  //Locations
+  // See _layout.tsx
   const { locations } = React.useContext(LocationsCtx);
 
   // Ask permission & grab user location, start 5s polling
   useEffect(() => {
-    let interval: NodeJS.Timeout
+    let interval: number
     ;(async () => {
       const { status } = await Location.requestForegroundPermissionsAsync()
       if (status !== 'granted') {
         Alert.alert('Location permission required')
         return
       }
+
       const loc = await Location.getCurrentPositionAsync({})
       setUserLat(loc.coords.latitude)
       setUserLng(loc.coords.longitude)
+
+      //TODO: Change from interval to subscription (Location.startLocationUpdatesAsync(taskName, options)
       interval = setInterval(async () => {
         const { coords } = await Location.getCurrentPositionAsync({})
         setUserLat(coords.latitude)
         setUserLng(coords.longitude)
+
         if (tracking) {
           setPath(p => p.concat({ latitude: coords.latitude, longitude: coords.longitude }))
         }
@@ -79,28 +81,16 @@ export default function HomeScreen() {
 
   // Compute bearing + distance as soon as all four coords are non-null
   useEffect(() => {
-    if (
-      userLat  == null ||
-      userLng  == null ||
-      destLat  == null ||
-      destLng  == null
-    ) {
+    if (userLat  == null || userLng  == null || destLat  == null || destLng  == null) {
       setBearing(null)
       setDistance(null)
       return
     }
     setBearing(calcBearing(userLat, userLng, destLat, destLng))
 
-    // haversine
-    const toRad = (d:number) => (d * Math.PI) / 180
-    const d =
-      2 * 6371 *
-      Math.asin(Math.sqrt(
-        Math.sin((toRad(destLat) - toRad(userLat)) / 2) ** 2 +
-        Math.cos(toRad(userLat)) * Math.cos(toRad(destLat)) *
-        Math.sin((toRad(destLng) - toRad(userLng)) / 2) ** 2
-      ))
-    setDistance(d)
+    const distance = haversineDistance(userLat, userLng, destLat, destLng)
+
+    setDistance(distance)
   }, [userLat, userLng, destLat, destLng])
 
   // Arrival trigger
@@ -132,7 +122,7 @@ export default function HomeScreen() {
         path: JSON.stringify(path),
         color: locations[screenIndex][1],
         name: locations[screenIndex][0],
-        startLocation: JSON.stringify(path[0]),
+        startLocation: JSON.stringify(path[0]), // Devote var to start location? 
         endLocation: JSON.stringify({ latitude: destLat, longitude: destLng }),
         seconds: JSON.stringify(seconds),
       },
@@ -167,13 +157,6 @@ export default function HomeScreen() {
     else if (translationY > 50) runOnJS(goToAddLocation)()
   }), [tracking])
 
-  const swipeDown = useMemo(() => Gesture.Pan().onEnd(({ translationY }) => {
-    'worklet'
-    if (tracking || Math.abs(translationY) > 50) runOnJS(goToAddLocation)()
-    console.log("Trans Y");
-    console.log(translationY);
-  }), [tracking])
-
   // Timer control helpers
   const startTimer = () => {
     setSeconds(0);
@@ -188,7 +171,7 @@ export default function HomeScreen() {
 
   // Show loading until all coords + bearing are ready
   if (bearing == null) {
-    return <Loading text="Bootstrapping…" />
+    return <Loading text="Loading… :)" />
   }
 
   // render arrow UI
@@ -246,16 +229,38 @@ function Loading({ text }: { text: string }) {
 }
 
 const styles = StyleSheet.create({
-  arrowOverlay: { flex:1, justifyContent:'center', alignItems:'center' },
-  arrowStack:   { alignItems:'center', justifyContent:'center' },
-  timer:        { position:'absolute', top:80, right:34, fontSize:18 },
-  stopButton:   {
-    position:'absolute', top:40, right:30,
-    backgroundColor:'#ff3b30', padding:8, borderRadius:20,
-    shadowColor:'#000', shadowOffset:{width:0,height:1},
-    shadowOpacity:.3, shadowRadius:2
+  arrowOverlay: { 
+    flex:1, 
+    justifyContent:'center', 
+    alignItems:'center' 
   },
-  stopButtonText:{ color:'white', fontWeight:'bold', fontSize:14 },
-  container:    { flex:1, justifyContent:'center', alignItems:'center' },
-  loadText:     { fontSize:16 },
+  arrowStack:   { 
+    alignItems:'center', 
+    justifyContent:'center'
+  },
+  timer: { 
+    position:'absolute', 
+    top:80, 
+    right:34, 
+    fontSize:18 
+  },
+  stopButton: {
+    position:'absolute', 
+    top:40, 
+    right:30,
+    backgroundColor:'#ff3b30', 
+    padding:8, 
+    borderRadius:20,
+    shadowColor:'#000', 
+    shadowOffset:{width:0,height:1},
+    shadowOpacity:.3, 
+    shadowRadius:2
+  },
+  stopButtonText:{ 
+    color:'white', 
+    fontWeight:'bold', 
+    fontSize:14 
+  },
+  container: { flex:1, justifyContent:'center', alignItems:'center' },
+  loadText: { fontSize:16 },
 })

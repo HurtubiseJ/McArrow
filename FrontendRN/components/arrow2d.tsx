@@ -2,27 +2,12 @@ import React from 'react';
 import { View, StyleSheet, ViewStyle, Text, TextStyle } from 'react-native';
 
 interface ArrowProps {
-  /**
-   * Color of the arrow (hex, rgb, or named color)
-   */
   color: string;
-  /**
-   * Bearing in degrees (0 = pointing up)
-   */
   bearing: number;
-  /**
-   * Size of the arrow head (defaults to 50)
-   */
   size?: number;
-  /**
-   * Optional label text to display below the arrow
-   */
   label?: string;
 }
 
-/**
- * Arrow component
- */
 const Arrow: React.FC<ArrowProps> = ({ color, bearing, size = 70, label }) => {
   const headSize = size;
   const stemWidth = headSize * 0.35;
@@ -81,16 +66,16 @@ const styles = StyleSheet.create({
   wrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-  } as ViewStyle,
+  },
   arrowContainer: {
     alignItems: 'center',
     justifyContent: 'flex-start',
-  } as ViewStyle,
+  },
   head: {
     width: 0,
     height: 0,
-  } as ViewStyle,
-  stem: {} as ViewStyle,
+  },
+  stem: {},
   label: {
     marginTop: 15,
     fontSize: 20,
@@ -98,10 +83,7 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 0.5 },
     textShadowRadius: 0.5,
     elevation: 1,
-  } as TextStyle,
+  },
 });
 
 export default Arrow;
-
-// Usage Example:
-// <Arrow color="#FF0000" bearing={135} size={60} label="Store A" />

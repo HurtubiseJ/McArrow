@@ -17,18 +17,20 @@
     - This should show a QR code along with more options
 
 5) What files are what?
+    - _layout_wads.tsx
+        - This file is currently not used by will be the base layout for when ads are included.
     - _layout.tsx 
-        - This file contains the layout for the main page of our app. If we want to change how our app looks we will start here. 
+        - This file contains the layout for the main page of our app. If we want to change how our app looks we will start here. Also contains Location definitions, this allows us to use async storage
+        and persist locations throughout screens.
     - index.tsx
         - This file contains the main entry point for our app. It is the first file that runs when we start the app.
     - inLineAd.tsx
-        - This file contains the component for displaying our banner ad. With this component we can add our banner ad anywhere in our app!
-    - testGyro.tsx 
-        - Code for getting the orientation of the device from the gyroscope.
-    - testLocation.tsx 
-        - This file makes a request to the Google Maps api and returns a list of the closest restaurants to the user. We can input a string like "McDonald's" and it will return a list of the closest McDonald's to the user.
-    - userLocation.tsx 
-        - This file gets the device's location and returns the latitude and longitude of the device. We can compare these coordinates to the coordinates we get in testLocation.tsx to find the closest restaurant to the user.
+        - Currerntly not used, will once ads are added. This file contains the component for displaying our banner ad. With this component we can add our banner ad anywhere in our app!
+    - addLocation.tsx
+        - This file contains the add location screen. Here you can add additional locations to the defaults while also customizing colors.
+    - map.tsx
+        - This file is the screen which shows the user path on completion. Currently not finished and may
+        be buggy. Shows map of path and summary stats.
 
 6) When you add a feature pres 'r' in the expo-cli to reload the app. The app should automatically rebuild on your device with the changes you added. Sometimes you may need to 'ctrl-c' and restart your app but most of the time pressing 'r' works nicely (and saves time from restarting!).
 

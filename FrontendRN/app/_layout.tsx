@@ -24,6 +24,7 @@ type Ctx = {
   setLocations: (l: LocationItem[]) => void
 }
 
+// Allows context through application
 export const LocationsCtx = createContext<Ctx>({
   locations: PRESETS,
   setLocations: () => {},
@@ -44,6 +45,7 @@ export default function RootLayout() {
         })()
     }, [])
 
+    // Save to storage on update
     useEffect(() => {
         if (locations) AsyncStorage.setItem('locations', JSON.stringify(locations))
     }, [locations])

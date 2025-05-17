@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import MapView, { Polyline, Marker } from 'react-native-maps';
 import { useLocalSearchParams, Stack } from 'expo-router';
-import { getDistance } from '@/lib/locationUtil';
+import { haversineDistance } from '@/lib/locationUtil';
 
 type Coord = { latitude: number; longitude: number };
 
@@ -22,6 +22,7 @@ export default function MapScreen() {
   const destination:Coord = JSON.parse(endLocation);
   const lineColor = color.startsWith('#') ? color : `#${color}`;
 
+  // Calculates residual between line (optimal path) and point
   function calcResid(start: Coord, end: Coord, pt: Coord): number {
     const x1 = start.longitude, y1 = start.latitude;
     const x2 = end.longitude,   y2 = end.latitude;
@@ -36,6 +37,7 @@ export default function MapScreen() {
     return dist * dist;
   }
 
+  // Summation of residuals for whole path
   function calcSumDistances(path: Coord[]): number {
     return path.reduce((sum, pt) => sum + calcResid(startLoc, destination, pt), 0);
   }
@@ -45,7 +47,7 @@ export default function MapScreen() {
 
   useEffect(() => {
     async function computeMetrics() {
-      const d = await getDistance(
+      const d = await haversineDistance(
         startLoc.latitude,
         startLoc.longitude,
         destination.latitude,
@@ -95,6 +97,7 @@ export default function MapScreen() {
         </MapView>
       </View>
 
+      {/* summary section */}
       <View style={styles.summarySection}>
         <Text style={styles.summaryText}>Location: {name}</Text>
         <Text style={styles.summaryText}>
@@ -112,7 +115,14 @@ export default function MapScreen() {
 }
 
 const styles = StyleSheet.create({
-  mapSection:     { flex: 0.6 },
-  summarySection: { flex: 0.4, backgroundColor: '#fff', padding: 16 },
-  summaryText:    { fontSize: 16, marginBottom: 8 },
+  mapSection: { flex: 0.6 },
+  summarySection: { 
+    flex: 0.4, 
+    backgroundColor: '#fff', 
+    padding: 16 
+  },
+  summaryText: { 
+    fontSize: 16, 
+    marginBottom: 8 
+  },
 });

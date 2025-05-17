@@ -1,5 +1,3 @@
-// // InlineAd.tsx
-
 // import { View } from 'react-native';
 // import * as Device from 'expo-device';
 // import React, { useState } from 'react';
