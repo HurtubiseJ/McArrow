@@ -228,8 +228,11 @@ export default function HomeScreen() {
       >
         <View style={styles.arrowStack}>
           <Arrow color={destColor} bearing={arrowAngle} size={80} label={name} />
+          { !tracking && (
+            <Text style={styles.hint}>Press to start tracking path</Text>
+          )}
         </View>
-        {tracking && (
+        { (tracking) && (
           <>
             <Text style={styles.timer}>
               {String(Math.floor(seconds/60)).padStart(2,'0')}:
@@ -298,4 +301,5 @@ const styles = StyleSheet.create({
   },
   container: { flex:1, justifyContent:'center', alignItems:'center' },
   loadText: { fontSize:16 },
+  hint: { color: "lightgrey" },
 })
