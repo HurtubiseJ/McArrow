@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, Pressable } from 'react-native';
 import MapView, { Polyline, Marker } from 'react-native-maps';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { haversineDistance } from '@/lib/locationUtil';
+import { useRouter } from 'expo-router';
 
 type Coord = { latitude: number; longitude: number };
 
 export default function MapScreen() {
+  const router = useRouter()
   const { path: rawPath, color, name, startLocation, endLocation, seconds } =
     useLocalSearchParams<{
       path: string;
@@ -17,24 +19,35 @@ export default function MapScreen() {
       seconds: string;
     }>();
 
-  const userPath: Coord[] = JSON.parse(rawPath);
+  const rawPathParam = Array.isArray(rawPath) ? rawPath[0] : rawPath; 
+  const userPath: Coord[] = JSON.parse(decodeURIComponent(rawPathParam));
   const startLoc:   Coord = JSON.parse(startLocation);
   const destination:Coord = JSON.parse(endLocation);
   const lineColor = color.startsWith('#') ? color : `#${color}`;
 
-  // Calculates residual between line (optimal path) and point
+  const R = 6378137;
+  function toMercator({ latitude, longitude }: Coord) {
+    const lmda = longitude * Math.PI / 180;        
+    const theta = Math.min(Math.max(latitude, -85.05112878), 85.05112878) * Math.PI / 180;
+    return {
+      x: R * lmda,
+      y: R * Math.log(Math.tan(Math.PI / 4 + theta / 2)),
+    };
+  }
+
   function calcResid(start: Coord, end: Coord, pt: Coord): number {
-    const x1 = start.longitude, y1 = start.latitude;
-    const x2 = end.longitude,   y2 = end.latitude;
-
-    const A =  y2 - y1;
-    const B =  x1 - x2;
-    const C =  x2*y1 - y2*x1;
-
-    const num   = Math.abs(A * pt.longitude + B * pt.latitude + C);
-    const denom = Math.hypot(A, B);
-    const dist  = num / denom;
-    return dist * dist;
+    const { x: x1, y: y1 } = toMercator(start);
+    const { x: x2, y: y2 } = toMercator(end);
+    const { x: px, y: py }    = toMercator(pt);
+  
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+  
+    const num   = Math.abs(dy * (px - x1) - dx * (py - y1));
+    const denom = Math.hypot(dx, dy);
+    const dist  = num / denom;        
+  
+    return dist * dist;               
   }
 
   // Summation of residuals for whole path
@@ -99,6 +112,9 @@ export default function MapScreen() {
 
       {/* summary section */}
       <View style={styles.summarySection}>
+        <Pressable onPress={() => {router.back()}}>
+            <Text style={styles.goBack}>Go Back</Text>
+        </Pressable>
         <Text style={styles.summaryText}>Location: {name}</Text>
         <Text style={styles.summaryText}>
           Distance (straight): {distance.toLocaleString()} m
@@ -107,7 +123,7 @@ export default function MapScreen() {
           Path residuals: {residuals.toFixed(2)}
         </Text>
         <Text style={styles.summaryText}>
-          Time to complete: {seconds ?? '–'} s
+          Time to complete: {seconds.toString() ?? '–'} s
         </Text>
       </View>
     </>
@@ -125,4 +141,7 @@ const styles = StyleSheet.create({
     fontSize: 16, 
     marginBottom: 8 
   },
+  goBack: {
+    color: "lightblue",
+  }
 });

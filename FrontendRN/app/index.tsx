@@ -7,6 +7,9 @@ import Arrow from '@/components/arrow2d'
 import { calcBearing, getNearestLocation, haversineDistance } from '@/lib/locationUtil'
 import { runOnJS } from 'react-native-reanimated';
 import { LocationsCtx } from './_layout'
+import { nanoid } from 'nanoid'; 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 export default function HomeScreen() {
   const router = useRouter()
@@ -36,33 +39,40 @@ export default function HomeScreen() {
   // See _layout.tsx
   const { locations } = React.useContext(LocationsCtx);
 
-  // Ask permission & grab user location, start 5s polling
+  // Ask permission & grab user location, start subscription
   useEffect(() => {
-    let interval: number
-    ;(async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync()
+    let sub: Location.LocationSubscription | undefined;
+  
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Location permission required')
-        return
+        Alert.alert('Location permission required');
+        return;
       }
-
-      const loc = await Location.getCurrentPositionAsync({})
-      setUserLat(loc.coords.latitude)
-      setUserLng(loc.coords.longitude)
-
-      //TODO: Change from interval to subscription (Location.startLocationUpdatesAsync(taskName, options)
-      interval = setInterval(async () => {
-        const { coords } = await Location.getCurrentPositionAsync({})
-        setUserLat(coords.latitude)
-        setUserLng(coords.longitude)
-
-        if (tracking) {
-          setPath(p => p.concat({ latitude: coords.latitude, longitude: coords.longitude }))
+  
+      sub = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.High,
+          timeInterval: 5000,      // >= 5 s between callbacks
+          distanceInterval: 1,     // or >= 1 m of movement
+        },
+        ({ coords }) => {
+          setUserLat(coords.latitude);
+          setUserLng(coords.longitude);
+  
+          if (tracking) {
+            setPath(p =>
+              p.concat({ latitude: coords.latitude, longitude: coords.longitude })
+            );
+          }
         }
-      }, 5000)
-    })()
-    return () => clearInterval(interval)
-  }, [tracking])
+      );
+    })();
+  
+    return () => {
+      sub?.remove();
+    };
+  }, [tracking]);
 
   // Once we have user coords, geocode the current target
   useEffect(() => {
@@ -96,7 +106,27 @@ export default function HomeScreen() {
   // Arrival trigger
   useEffect(() => {
     if (tracking && distance != null && distance < 0.08) {
-      setArrived(true)
+        // Save path for history page.
+        const newRecord = {
+            id:       new Date().toISOString(),
+            name:     locations[screenIndex][0],
+            color:    locations[screenIndex][1],
+            path,
+            startLoc: path[0],
+            endLoc:   { latitude: destLat, longitude: destLng },
+            seconds,
+            distanceM: haversineDistance(
+                path[0].latitude, path[0].longitude, destLat, destLng
+            ),
+          };
+          
+        AsyncStorage.getItem('paths')
+            .then(str => (str ? JSON.parse(str) : []))
+            .then((arr: any[]) => AsyncStorage.setItem('paths', JSON.stringify([...arr, newRecord])))
+            .catch(console.warn);
+
+
+        setArrived(true)
     }
   }, [distance, tracking])
 
@@ -145,6 +175,10 @@ export default function HomeScreen() {
     router.push("/addLocation");
   }
 
+  function goToHistory () {
+    router.push("/history");
+  }
+
   // Gesture to swipe between targets
   const panGesture = useMemo(() => Gesture.Pan().onEnd(({ translationX, translationY }) => {
     'worklet'
@@ -155,6 +189,7 @@ export default function HomeScreen() {
     if (translationX < -50) runOnJS(goRight)()
     else if (translationX > 50) runOnJS(goLeft)()
     else if (translationY > 50) runOnJS(goToAddLocation)()
+    else if (translationY < 0)  runOnJS(goToHistory)()
   }), [tracking])
 
   // Timer control helpers
