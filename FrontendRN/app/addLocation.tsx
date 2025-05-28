@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     safe: { flex: 1, backgroundColor: '#fff' },
     back: {
       alignSelf: 'flex-start',
-      backgroundColor: '#007AFF',
+      backgroundColor: 'mediumblue',
       paddingHorizontal: 12,
       paddingVertical: 6,
       borderRadius: 6,
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     addButton: { 
         marginTop: 16, 
         alignItems: 'center',     
-        backgroundColor: '#007AFF', 
+        backgroundColor: 'mediumblue', 
         padding: 12, 
         borderRadius: 6 
     },

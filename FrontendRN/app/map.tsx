@@ -112,19 +112,34 @@ export default function MapScreen() {
 
       {/* summary section */}
       <View style={styles.summarySection}>
-        <Pressable onPress={() => {router.back()}}>
+        {/* <Pressable onPress={() => {router.back()}}>
             <Text style={styles.goBack}>Go Back</Text>
-        </Pressable>
-        <Text style={styles.summaryText}>Location: {name}</Text>
-        <Text style={styles.summaryText}>
-          Distance (straight): {distance.toLocaleString()} m
-        </Text>
-        <Text style={styles.summaryText}>
-          Path residuals: {residuals.toFixed(2)}
-        </Text>
-        <Text style={styles.summaryText}>
-          Time to complete: {seconds.toString() ?? '–'} s
-        </Text>
+        </Pressable> */}
+        <Text style={styles.summaryTitle}>Path completed!</Text>
+        <View style={styles.summarySubview}>
+            <Text style={styles.summaryText}>Location: {name}</Text>
+            <Text style={styles.summaryText}>
+            Distance (straight): {distance.toLocaleString()} k
+            </Text>
+            <Text style={styles.summaryText}>
+            Path residuals: {residuals.toFixed(2)}
+            </Text>
+            <Text style={styles.summaryText}>
+            Time to complete: {seconds.toString() ?? '–'} s
+            </Text>
+        </View>
+        <View style={styles.summaryButtonsContainer}>
+            <Pressable style={styles.button} onPress={() => {router.back()}}>
+                <Text style={styles.buttonText}>
+                    Go back
+                </Text>
+            </Pressable>
+            <Pressable style={styles.button}>
+                <Text style={styles.buttonText}>
+                    Save Path
+                </Text>
+            </Pressable>
+        </View>
       </View>
     </>
   );
@@ -137,11 +152,40 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff', 
     padding: 16 
   },
+  summarySubview: {
+    flex: 1, 
+    padding: 10,
+    shadowColor: "black",
+    backgroundColor: "#f0f0f0",
+    borderRadius: 8,
+  },
+  summaryButtonsContainer: {
+    flexDirection: "row",
+    padding: 5,
+  },
   summaryText: { 
     fontSize: 16, 
     marginBottom: 8 
   },
+  summaryTitle: {
+    fontSize: 24,
+    paddingVertical: 5,
+  },
   goBack: {
-    color: "lightblue",
+    color: "mediumblue",
+  },
+  button: {
+    marginBottom: 20,
+    marginRight: 15, 
+    borderRadius: 8,
+    shadowColor: "#000000", 
+    shadowRadius: 5, 
+    backgroundColor: "mediumblue",
+
+  },
+  buttonText: {
+    padding: 5,
+    color: "white",
+
   }
 });
