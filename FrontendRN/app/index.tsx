@@ -189,7 +189,7 @@ export default function HomeScreen() {
     if (translationX < -50) runOnJS(goRight)()
     else if (translationX > 50) runOnJS(goLeft)()
     else if (translationY > 50) runOnJS(goToAddLocation)()
-    else if (translationY < 0)  runOnJS(goToHistory)()
+    else if (translationY < -50)  runOnJS(goToHistory)()
   }), [tracking])
 
   // Timer control helpers
