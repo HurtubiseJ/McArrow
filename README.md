@@ -1,2 +1,2 @@
 # McArrow
-App to find the nearest McDonalds and Compete with Firends
+App to find the nearest McDonalds and Compete with Friends
